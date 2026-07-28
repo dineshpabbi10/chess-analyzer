@@ -300,7 +300,18 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .ml-cell.active .ml-dot { color: #fff !important; }
 .ml-san { font-weight: 600; }
 
+/* The move-explanation card shows in the right column on desktop, and above the
+   board on mobile. Only one instance is visible at a time. */
+.mobile-details { display: none; }
+
 @media (max-width: 900px) {
   .review-grid { grid-template-columns: 1fr; }
   .side-col { order: 2; }
+  .desktop-details { display: none; }
+  .mobile-details {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 14px;
+  }
 }

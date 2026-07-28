@@ -213,6 +213,11 @@ export function App() {
 
       <div className="review-grid">
         <div className="board-col">
+          {/* On mobile the move explanation sits above the board; on desktop it
+              lives in the right column (see .mobile-details / .desktop-details). */}
+          <div className="mobile-details">
+            <MoveDetails move={curMove} />
+          </div>
           <div className="board-stack">
             <EvalBar cp={evalObj?.cp ?? 0} mate={evalObj?.mate ?? null} flipped={flipped} />
             <Board
@@ -234,7 +239,9 @@ export function App() {
 
         <div className="side-col">
           <ReviewSummary report={rep} />
-          <MoveDetails move={curMove} />
+          <div className="desktop-details">
+            <MoveDetails move={curMove} />
+          </div>
           <MoveList moves={moves} current={current} onSelect={go} />
         </div>
       </div>

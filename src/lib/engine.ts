@@ -1,6 +1,17 @@
-// Thin async wrapper around the single-threaded Stockfish 16 WASM build.
-// Runs as a Web Worker loaded from /public/engine. Analyses are queued so only
-// one `go` is in flight at a time. MultiPV=2 so we learn the 2nd-best move too.
+// Thin async wrapper around Stockfish 16 (WASM), run as a Web Worker from
+// /public/engine. When the page is cross-origin isolated we load the
+// multi-threaded build and give it N threads (much faster); otherwise we fall
+// back to the single-threaded build. Analyses are queued so only one `go` is in
+// flight at a time. MultiPV=2 so we learn the 2nd-best move too.
+
+// Whether the page can use SharedArrayBuffer + threads (needs COOP/COEP headers).
+export const isThreaded =
+  typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated === true
+
+// Threads to give the engine (leave one core for the UI). 1 when single-threaded.
+export const engineThreads = isThreaded
+  ? Math.max(1, Math.min(16, (navigator.hardwareConcurrency || 4) - 1))
+  : 1
 
 export interface Line {
   scoreCp: number | null // side-to-move POV
@@ -23,39 +34,92 @@ type Pending = {
 }
 
 export class Engine {
-  private worker: Worker
-  private ready: Promise<void>
+  private worker!: Worker
   private queue: (() => void)[] = []
   private busy = false
   private current: Pending | null = null
 
-  constructor() {
-    this.worker = new Worker('/engine/stockfish-nnue-16-single.js')
-    this.ready = new Promise((resolve) => {
-      const onReady = (e: MessageEvent) => {
-        const line = String(e.data)
-        if (line === 'uciok') {
-          this.send('setoption name Use NNUE value true')
-          this.send('setoption name Hash value 64')
-          this.send('setoption name MultiPV value 2')
-          this.send('isready')
-        } else if (line === 'readyok') {
-          this.worker.removeEventListener('message', onReady)
-          resolve()
-        }
-      }
-      this.worker.addEventListener('message', onReady)
-      this.worker.addEventListener('message', (e) => this.onMessage(String(e.data)))
-      this.send('uci')
-    })
-  }
+  // What the engine actually ended up running as (may differ from isThreaded
+  // if the multi-threaded build failed to init and we fell back).
+  public threaded = isThreaded
+  public threads = engineThreads
 
   private send(cmd: string) {
     this.worker.postMessage(cmd)
   }
 
-  init() {
-    return this.ready
+  // Boot one engine build and resolve once it reports `readyok`. Rejects on a
+  // worker error or if init stalls (the multi-threaded build can hang on some
+  // browsers) so init() can fall back to the single-threaded build.
+  private boot(threaded: boolean): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const path = threaded
+        ? '/engine/stockfish-nnue-16.js'
+        : '/engine/stockfish-nnue-16-single.js'
+      const threads = threaded ? engineThreads : 1
+      const worker = new Worker(path)
+      this.worker = worker
+      let settled = false
+      const timer = setTimeout(() => {
+        if (settled) return
+        settled = true
+        try {
+          worker.terminate()
+        } catch {
+          /* noop */
+        }
+        reject(new Error('engine init timed out'))
+      }, 20000)
+
+      const onReady = (e: MessageEvent) => {
+        const line = String(e.data)
+        if (line === 'uciok') {
+          // NOTE: do NOT send "setoption name Use NNUE value true" — on the
+          // multi-threaded build it triggers an eval-file reload that swallows
+          // the readyok handshake and hangs init. SF16 uses NNUE by default.
+          // Hash must stay <=128 on the threaded build: its WASM memory is
+          // capped, and a larger hash silently overflows and never returns readyok.
+          worker.postMessage(`setoption name Threads value ${threads}`)
+          worker.postMessage(`setoption name Hash value ${threaded ? 128 : 64}`)
+          worker.postMessage('setoption name MultiPV value 2')
+          worker.postMessage('isready')
+        } else if (line === 'readyok' && !settled) {
+          settled = true
+          clearTimeout(timer)
+          worker.removeEventListener('message', onReady)
+          resolve()
+        }
+      }
+      worker.addEventListener('message', onReady)
+      worker.addEventListener('message', (e) => this.onMessage(String(e.data)))
+      worker.addEventListener('error', () => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        try {
+          worker.terminate()
+        } catch {
+          /* noop */
+        }
+        reject(new Error('engine worker error'))
+      })
+      worker.postMessage('uci')
+    })
+  }
+
+  async init(): Promise<void> {
+    try {
+      await this.boot(this.threaded)
+    } catch (err) {
+      if (this.threaded) {
+        // Multi-threaded build failed — fall back to the reliable single build.
+        this.threaded = false
+        this.threads = 1
+        await this.boot(false)
+      } else {
+        throw err
+      }
+    }
   }
 
   private onMessage(line: string) {

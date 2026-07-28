@@ -19,7 +19,11 @@ export default defineConfig({
     },
   },
   preview: {
+    port: 4173,
     headers: coopCoep,
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
   },
   // stockfish worker + wasm live in public/engine and are served as-is
 })

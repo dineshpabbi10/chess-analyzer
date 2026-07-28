@@ -1,8 +1,9 @@
-# ♟ Chess Analyzer
+# ♟ Fast Chess Analyzer
 
-A self-hosted clone of **chess.com's Game Review**. Paste a chess.com or lichess
-game link, and it fetches the game, runs **Stockfish 16 (NNUE)** in your browser,
-and produces the same experience you get on chess.com:
+A self-hosted, **installable** clone of **chess.com's Game Review**. Paste a
+chess.com or lichess game link, and it fetches the game, runs **Stockfish 16** in
+your browser (multi-threaded), and produces the same experience you get on
+chess.com:
 
 - **Move classifications** — Brilliant, Great, Best, Excellent, Good, Book,
   Inaccuracy, Mistake, Miss, Blunder — with the familiar colored badges shown on
@@ -16,6 +17,26 @@ and produces the same experience you get on chess.com:
 
 Everything runs locally — the engine is WebAssembly in your browser, and a tiny
 Node proxy only fetches the game PGN (to get around browser CORS).
+
+## Install it (PWA)
+
+Fast Chess Analyzer is a **Progressive Web App**, so you can install it like a
+native app:
+
+- **Desktop (Chrome/Edge):** click the install icon in the address bar, or
+  menu → "Install Fast Chess Analyzer".
+- **iOS Safari:** Share → "Add to Home Screen".
+- **Android Chrome:** menu → "Install app" / "Add to Home Screen".
+
+Once installed it opens in its own window (no browser chrome) from the home
+screen / dock. A service worker precaches the app shell, the Stockfish engine,
+and the piece art, so **the app opens and analyzes pasted PGNs offline** — only
+fetching a game *by link* needs a connection. The install requires HTTPS (or
+`localhost`), which the Vercel deploy provides automatically.
+
+PWA pieces live in `public/manifest.webmanifest`, `public/sw.js`, and
+`public/icons/`; the service worker is registered from `src/main.tsx` (production
+builds only).
 
 ## Requirements
 

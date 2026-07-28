@@ -145,7 +145,7 @@ export function App() {
     return (
       <div className="landing">
         <div className="landing-card">
-          <h1>♟ Chess Analyzer</h1>
+          <h1>♟ Fast Chess Analyzer</h1>
           <p className="subtitle">
             Paste a chess.com or lichess game link and get a full Game Review — move classifications,
             accuracy, and the key mistakes, powered by Stockfish 16.
@@ -224,7 +224,7 @@ export function App() {
     <div className="review">
       <header className="topbar">
         <div className="brand" onClick={backToInput}>
-          ♟ Chess Analyzer
+          ♟ Fast Chess Analyzer
         </div>
         <div className="players">
           <span>{rep.headers.White || 'White'}</span>

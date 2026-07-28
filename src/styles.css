@@ -14,18 +14,32 @@
 }
 
 * { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; }
+html {
+  /* Stop mobile browsers from auto-inflating text and from zooming the layout. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+html, body, #root { margin: 0; }
 body {
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Never allow horizontal scroll / the "zoomed-in" look on phones. */
+  overflow-x: hidden;
 }
-button { font-family: inherit; cursor: pointer; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* remove the 300ms tap delay + double-tap zoom */
+}
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
 /* ---------------- Landing ---------------- */
 .landing {
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,39 +61,50 @@ button { font-family: inherit; cursor: pointer; }
 .input-wrap { display: flex; gap: 10px; }
 .input-wrap input {
   flex: 1;
+  min-width: 0; /* let the input shrink instead of overflowing the row */
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   color: var(--text);
-  padding: 13px 14px;
-  font-size: 14px;
+  padding: 14px 15px;
+  font-size: 16px; /* >=16px so iOS doesn't zoom in on focus (and never zoom back) */
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.input-wrap input:focus { border-color: var(--green); }
+.input-wrap input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.18);
+}
 button.primary {
   background: var(--green);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 0 22px;
+  border-radius: 10px;
+  padding: 0 24px;
   font-size: 15px;
   font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.05s ease;
 }
 button.primary:hover { background: var(--green-d); }
+button.primary:active { transform: translateY(1px); }
 button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.depth-row { display: flex; align-items: center; gap: 8px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.depth-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 18px; color: var(--muted); font-size: 13px; }
 .chip {
   background: var(--panel-2);
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 999px;
-  padding: 5px 13px;
+  padding: 6px 14px;
   font-size: 13px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
+.chip:hover { border-color: var(--green); }
 .chip.on { background: var(--green); border-color: var(--green); color: #fff; }
 .examples { margin-top: 16px; color: var(--muted); font-size: 13px; }
-.link { background: none; border: none; color: var(--green); text-decoration: underline; font-size: 13px; padding: 0 4px; }
+.link { background: none; border: none; color: var(--green); text-decoration: underline; font-size: 13px; padding: 2px 4px; border-radius: 4px; }
+.link:hover { color: var(--text); }
 .error {
   margin-top: 18px;
   background: rgba(202, 52, 49, 0.15);
@@ -97,7 +122,7 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .foot { color: var(--muted); font-size: 12px; }
 
 /* ---------------- Review ---------------- */
-.review { min-height: 100%; display: flex; flex-direction: column; }
+.review { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
 .topbar {
   display: flex;
   align-items: center;
@@ -106,18 +131,29 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
-.brand { font-weight: 800; font-size: 17px; cursor: pointer; }
-.players { color: var(--muted); font-size: 14px; display: flex; gap: 8px; }
-.players .vs { opacity: 0.6; }
+.brand { font-weight: 800; font-size: 17px; cursor: pointer; white-space: nowrap; }
+.players {
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.players span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.players .vs { opacity: 0.6; flex: none; }
 .ghost {
   background: transparent;
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 8px 15px;
   font-size: 13px;
+  white-space: nowrap;
+  flex: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
-.ghost:hover { border-color: var(--green); }
+.ghost:hover { border-color: var(--green); background: var(--panel-2); }
 
 .review-grid {
   flex: 1;
@@ -158,13 +194,15 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .board {
   position: relative;
   flex: 1;
+  min-width: 0;
   aspect-ratio: 1 / 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   user-select: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 .sq { position: relative; }
 .sq.light { background: var(--light-sq); }
@@ -196,17 +234,19 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .arrow-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 
-.controls { display: flex; gap: 8px; margin-top: 16px; }
+.controls { display: flex; gap: 8px; margin-top: 16px; width: 100%; max-width: 600px; justify-content: center; }
 .controls button {
   background: var(--panel);
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 8px;
   width: 46px;
-  height: 40px;
+  height: 42px;
   font-size: 16px;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.05s ease;
 }
 .controls button:hover { border-color: var(--green); background: var(--panel-2); }
+.controls button:active { transform: translateY(1px); }
 
 /* side column */
 .side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -304,11 +344,12 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   background: none;
   border: none;
   color: var(--text);
-  padding: 6px 8px;
-  border-radius: 5px;
+  padding: 7px 8px;
+  border-radius: 6px;
   font-size: 14px;
   text-align: left;
   width: 100%;
+  transition: background 0.12s ease;
 }
 .ml-cell.empty { pointer-events: none; }
 .ml-cell:hover { background: rgba(255, 255, 255, 0.05); }
@@ -321,14 +362,51 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
    board on mobile. Only one instance is visible at a time. */
 .mobile-details { display: none; }
 
+/* ---- Tablet & below: single column, board on top ---- */
 @media (max-width: 900px) {
-  .review-grid { grid-template-columns: 1fr; }
-  .side-col { order: 2; }
+  .review-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 16px;
+  }
+  .side-col { order: 2; gap: 14px; }
   .desktop-details { display: none; }
   .mobile-details {
     display: block;
     width: 100%;
     max-width: 600px;
-    margin-bottom: 14px;
+    margin: 0 auto 14px;
   }
+  .board-stack, .controls { margin-left: auto; margin-right: auto; }
+  /* The players already appear under the accuracy scores, so free up the header. */
+  .topbar { padding: 11px 16px; }
+  .players { display: none; }
+  .brand { font-size: 16px; }
+  .movelist { max-height: 260px; }
+}
+
+/* ---- Phones ---- */
+@media (max-width: 600px) {
+  .landing { padding: 16px; gap: 16px; }
+  .landing-card { padding: 24px 20px; border-radius: 14px; }
+  .landing-card h1 { font-size: 25px; line-height: 1.15; }
+  .subtitle { font-size: 14px; margin-bottom: 20px; }
+
+  /* Stack the URL field and the Analyze button for full-width tap targets. */
+  .input-wrap { flex-direction: column; }
+  button.primary { padding: 14px 24px; width: 100%; }
+
+  .review-grid { padding: 12px; gap: 14px; }
+  .controls { gap: 6px; }
+  .controls button { flex: 1; }
+  .summary { padding: 16px; }
+  .acc-num { font-size: 27px; }
+  .details { padding: 14px; }
+}
+
+/* Fine-tune for very small screens */
+@media (max-width: 360px) {
+  .landing-card h1 { font-size: 22px; }
+  .acc-num { font-size: 24px; }
+  .details-eval { font-size: 16px; }
 }

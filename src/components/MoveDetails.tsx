@@ -28,6 +28,16 @@ export function MoveDetails({ move }: { move: AnalyzedMove | null }) {
       </div>
     )
   }
+  if (!move.classification) {
+    return (
+      <div className="details">
+        <div className="details-empty">
+          {move.moveNumber}
+          {move.color === 'w' ? '.' : '...'} {move.san} — analyzing…
+        </div>
+      </div>
+    )
+  }
   const m = META[move.classification]
   const mover = move.color === 'w' ? 'White' : 'Black'
   const showBest = !move.isBest && move.bestMoveSan
@@ -46,7 +56,9 @@ export function MoveDetails({ move }: { move: AnalyzedMove | null }) {
             {m.label} · {mover}
           </div>
         </div>
-        <div className="details-eval">{evalText(move.evalAfter.cp, move.evalAfter.mate)}</div>
+        <div className="details-eval">
+          {evalText(move.evalAfter?.cp ?? null, move.evalAfter?.mate ?? null)}
+        </div>
       </div>
 
       <div className="details-body">

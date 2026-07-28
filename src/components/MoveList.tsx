@@ -10,11 +10,11 @@ interface Props {
 
 function Cell({ move, active, onClick }: { move?: AnalyzedMove; active: boolean; onClick: () => void }) {
   if (!move) return <span className="ml-cell empty" />
-  const m = META[move.classification]
+  const m = move.classification ? META[move.classification] : null
   return (
     <button className={`ml-cell${active ? ' active' : ''}`} onClick={onClick}>
-      <span className="ml-dot" style={{ color: m.color }}>
-        {m.glyph}
+      <span className="ml-dot" style={{ color: m ? m.color : 'var(--muted)' }}>
+        {m ? m.glyph : '·'}
       </span>
       <span className="ml-san">{move.san}</span>
     </button>

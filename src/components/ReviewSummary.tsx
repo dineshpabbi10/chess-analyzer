@@ -2,10 +2,17 @@ import { ClassBadge } from './ClassBadge'
 import { META, SUMMARY_ORDER } from '../lib/classificationMeta'
 import type { GameReport } from '../lib/types'
 
-export function ReviewSummary({ report }: { report: GameReport }) {
+interface Progress {
+  done: number
+  total: number
+  loadingEngine: boolean
+}
+
+export function ReviewSummary({ report, progress }: { report: GameReport; progress?: Progress | null }) {
   const { white, black, headers } = report
   const whiteName = headers.White || 'White'
   const blackName = headers.Black || 'Black'
+  const pct = progress && progress.total ? (progress.done / progress.total) * 100 : 0
 
   return (
     <div className="summary">
@@ -13,6 +20,22 @@ export function ReviewSummary({ report }: { report: GameReport }) {
         <div className="summary-title">Game Review</div>
         <div className="summary-opening">{report.opening}</div>
       </div>
+
+      {progress && (
+        <div className="summary-progress">
+          <div className="summary-progress-row">
+            <span>
+              {progress.loadingEngine
+                ? 'Loading Stockfish engine…'
+                : `Analyzing… ${progress.done}/${progress.total}`}
+            </span>
+            {!progress.loadingEngine && <span>{Math.round(pct)}%</span>}
+          </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      )}
 
       <div className="acc-row">
         <div className="acc-col">

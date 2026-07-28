@@ -218,6 +218,14 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   padding: 18px;
 }
 .summary-head { text-align: center; margin-bottom: 14px; }
+.summary-progress { margin-bottom: 16px; }
+.summary-progress-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
 .summary-title { font-size: 18px; font-weight: 800; }
 .summary-opening { color: var(--muted); font-size: 13px; margin-top: 3px; }
 .acc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -252,6 +260,15 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
+  /* Fixed height so the card never resizes as you step between moves (a
+     "Best was…" line, a "Lost" stat, or the empty state would otherwise shift
+     the board on mobile). Sized to the tallest possible message, with content
+     vertically centered so shorter messages don't look bottom-heavy. */
+  height: 184px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .details-empty { color: var(--muted); font-size: 14px; line-height: 1.5; }
 .details-head { display: flex; align-items: center; gap: 12px; border-left: 4px solid; padding-left: 12px; }

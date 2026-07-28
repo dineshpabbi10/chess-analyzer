@@ -27,13 +27,14 @@ export interface AnalyzedMove {
   uci: string
   fenBefore: string
   fenAfter: string
-  classification: Classification
+  // null until this move has been analyzed (streaming: filled in move-by-move).
+  classification: Classification | null
   cpLoss: number // centipawn loss (>=0), white/black normalized to the mover
   winBefore: number // win% for the mover before the move (0-100)
   winAfter: number // win% for the mover after the move (0-100)
   accuracy: number // 0-100 for this move
-  evalBefore: EngineEval // eval of position before the move (white POV)
-  evalAfter: EngineEval // eval of position after the move (white POV)
+  evalBefore: EngineEval | null // eval of position before the move (white POV)
+  evalAfter: EngineEval | null // eval of position after the move (white POV)
   bestMoveSan: string | null // engine's preferred move in this position (SAN)
   isBest: boolean
 }

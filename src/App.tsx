@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Engine } from './lib/engine'
-import { analyzeGame } from './lib/analysis'
+import { analyzeStreaming, computeReports, parseGame } from './lib/analysis'
 import type { GameReport } from './lib/types'
 import { Board } from './components/Board'
 import { EvalBar } from './components/EvalBar'
@@ -34,15 +34,21 @@ export function App() {
   const [report, setReport] = useState<GameReport | null>(null)
   const [current, setCurrent] = useState(-1)
   const [flipped, setFlipped] = useState(false)
+  // Streaming state: whether analysis is still running + how far along.
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzed, setAnalyzed] = useState({ done: 0, total: 0 })
+  const [engineLoading, setEngineLoading] = useState(false)
 
   const engineRef = useRef<Engine | null>(null)
+  const cancelRef = useRef(false)
 
   const getEngine = useCallback(async () => {
     if (!engineRef.current) {
-      setProgress((p) => ({ ...p, phase: 'Loading Stockfish engine…' }))
+      setEngineLoading(true)
       const e = new Engine()
       await e.init()
       engineRef.current = e
+      setEngineLoading(false)
     }
     return engineRef.current
   }, [])
@@ -50,6 +56,7 @@ export function App() {
   const runAnalysis = useCallback(
     async (rawInput: string) => {
       setError(null)
+      cancelRef.current = false
       setView('loading')
       setProgress({ done: 0, total: 0, phase: 'Fetching game…' })
       try {
@@ -67,23 +74,41 @@ export function App() {
           pgn = data.pgn
         }
 
-        const engine = await getEngine()
-        setProgress({ done: 0, total: 1, phase: 'Analyzing…' })
-        const rep = await analyzeGame(pgn, engine, {
-          depth,
-          onProgress: (done, total) => setProgress({ done, total, phase: 'Analyzing…' }),
-        })
-        setReport(rep)
+        // Build the skeleton and show the board immediately — before the engine
+        // has even loaded. Classifications stream in move-by-move afterwards.
+        const parsed = parseGame(pgn)
+        setReport({ ...parsed.report })
         setCurrent(-1)
         setFlipped(false)
+        setAnalyzing(true)
+        setAnalyzed({ done: 0, total: parsed.positions.length })
         setView('review')
+
+        const engine = await getEngine()
+        await analyzeStreaming(parsed, engine, {
+          depth,
+          onProgress: (done, total) => setAnalyzed({ done, total }),
+          onMove: () =>
+            setReport((prev) =>
+              prev ? { ...prev, moves: prev.moves.slice(), ...computeReports(prev.moves) } : prev,
+            ),
+          isCancelled: () => cancelRef.current,
+        })
       } catch (e: any) {
         setError(e?.message || 'Something went wrong.')
         setView('input')
+      } finally {
+        setAnalyzing(false)
       }
     },
     [depth, getEngine],
   )
+
+  const backToInput = useCallback(() => {
+    cancelRef.current = true
+    setAnalyzing(false)
+    setView('input')
+  }, [])
 
   // Navigation
   const moves = report?.moves ?? []
@@ -111,7 +136,7 @@ export function App() {
   const evalObj = curMove ? curMove.evalAfter : moves[0]?.evalBefore
   const lastMove = curMove ? { from: curMove.uci.slice(0, 2), to: curMove.uci.slice(2, 4) } : null
   const bestArrow = useMemo(() => {
-    if (!curMove || curMove.isBest || !curMove.evalBefore.bestMove) return null
+    if (!curMove || curMove.isBest || !curMove.evalBefore?.bestMove) return null
     const uci = curMove.evalBefore.bestMove
     return { from: uci.slice(0, 2), to: uci.slice(2, 4) }
   }, [curMove])
@@ -198,7 +223,7 @@ export function App() {
   return (
     <div className="review">
       <header className="topbar">
-        <div className="brand" onClick={() => setView('input')}>
+        <div className="brand" onClick={backToInput}>
           ♟ Chess Analyzer
         </div>
         <div className="players">
@@ -206,7 +231,7 @@ export function App() {
           <span className="vs">vs</span>
           <span>{rep.headers.Black || 'Black'}</span>
         </div>
-        <button className="ghost" onClick={() => setView('input')}>
+        <button className="ghost" onClick={backToInput}>
           New game
         </button>
       </header>
@@ -238,7 +263,14 @@ export function App() {
         </div>
 
         <div className="side-col">
-          <ReviewSummary report={rep} />
+          <ReviewSummary
+            report={rep}
+            progress={
+              analyzing
+                ? { done: analyzed.done, total: analyzed.total, loadingEngine: engineLoading }
+                : null
+            }
+          />
           <div className="desktop-details">
             <MoveDetails move={curMove} />
           </div>

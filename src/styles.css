@@ -255,10 +255,9 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 18px;
+  padding: 16px 18px 18px;
 }
-.summary-head { text-align: center; margin-bottom: 14px; }
-.summary-progress { margin-bottom: 16px; }
+.summary-progress { margin: 14px 0 2px; }
 .summary-progress-row {
   display: flex;
   justify-content: space-between;
@@ -266,33 +265,70 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   font-size: 12px;
   margin-bottom: 6px;
 }
-.summary-title { font-size: 18px; font-weight: 800; }
-.summary-opening { color: var(--muted); font-size: 13px; margin-top: 3px; }
-.acc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.acc-col { text-align: center; flex: 1; }
-.acc-num { font-size: 30px; font-weight: 800; }
-.acc-lbl { color: var(--muted); font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.acc-mid { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-.counts { width: 100%; border-collapse: collapse; }
-.counts td { padding: 5px 4px; font-size: 14px; }
-.counts .c-w, .counts .c-b { width: 42px; text-align: center; font-weight: 700; color: var(--muted); }
-.counts .c-mid { display: flex; align-items: center; gap: 9px; font-weight: 600; }
+/* eval graph (mountain chart + classification dots) */
+.eval-graph {
+  position: relative;
+  width: 100%;
+  height: 84px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.eval-graph-svg, .eval-graph-dots {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
-.elo-row { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
-.elo-row > div { text-align: center; flex: 1; }
-.elo-num { font-size: 20px; font-weight: 800; }
-.elo-lbl { color: var(--muted); font-size: 11px; }
+/* shared table (names / players / accuracy / rating) */
+.sum-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.sum-table td { padding: 4px 2px; text-align: center; vertical-align: middle; }
+.sum-table td:first-child { text-align: left; width: auto; }
+.sum-table td:nth-child(2), .sum-table td:nth-child(4) { width: 74px; }
+.sum-table td:nth-child(3) { width: 40px; }
+.sum-label { font-size: 15px; font-weight: 600; }
+.sum-names td { color: var(--muted); font-size: 13px; font-weight: 600; padding-top: 8px; }
+.sum-names td:not(:first-child) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.class-badge {
-  display: inline-flex;
+.sum-avatar {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: #d7d5cf;
+  color: #6b6862;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-  font-weight: 800;
-  flex: none;
+  font-size: 30px;
+  line-height: 1;
 }
+
+.pill {
+  display: inline-block;
+  min-width: 62px;
+  padding: 7px 6px;
+  border-radius: 6px;
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.pill-white { background: #f5f4f0; color: #262421; }
+.pill-dark { background: #403e3b; color: #f5f4f0; }
+
+.sum-divider { height: 1px; background: var(--line); margin: 12px 0; }
+
+/* classification counts */
+.sum-counts td { padding: 6px 2px; }
+.cnt-label { font-size: 15px; font-weight: 600; }
+.cnt-num { font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.cnt-icon { line-height: 0; }
+.cls-icon { display: block; margin: 0 auto; }
+
+.sum-rating .sum-label { font-weight: 700; }
 
 /* details */
 .details {

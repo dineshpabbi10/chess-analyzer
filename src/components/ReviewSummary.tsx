@@ -1,4 +1,5 @@
-import { ClassBadge } from './ClassBadge'
+import { ClassIcon } from './ClassIcon'
+import { EvalGraph } from './EvalGraph'
 import { META, SUMMARY_ORDER } from '../lib/classificationMeta'
 import type { GameReport } from '../lib/types'
 
@@ -6,6 +7,14 @@ interface Progress {
   done: number
   total: number
   loadingEngine: boolean
+}
+
+function Avatar() {
+  return (
+    <div className="sum-avatar" aria-hidden>
+      ♟
+    </div>
+  )
 }
 
 export function ReviewSummary({ report, progress }: { report: GameReport; progress?: Progress | null }) {
@@ -16,10 +25,7 @@ export function ReviewSummary({ report, progress }: { report: GameReport; progre
 
   return (
     <div className="summary">
-      <div className="summary-head">
-        <div className="summary-title">Game Review</div>
-        <div className="summary-opening">{report.opening}</div>
-      </div>
+      <EvalGraph report={report} />
 
       {progress && (
         <div className="summary-progress">
@@ -37,48 +43,64 @@ export function ReviewSummary({ report, progress }: { report: GameReport; progre
         </div>
       )}
 
-      <div className="acc-row">
-        <div className="acc-col">
-          <div className="acc-num">{white.accuracy.toFixed(1)}</div>
-          <div className="acc-lbl">{whiteName}</div>
-        </div>
-        <div className="acc-mid">Accuracy</div>
-        <div className="acc-col">
-          <div className="acc-num">{black.accuracy.toFixed(1)}</div>
-          <div className="acc-lbl">{blackName}</div>
-        </div>
-      </div>
-
-      <table className="counts">
+      <table className="sum-table">
         <tbody>
-          {SUMMARY_ORDER.map((c) => {
-            const w = white.counts[c]
-            const b = black.counts[c]
-            if (w === 0 && b === 0) return null
-            return (
-              <tr key={c}>
-                <td className="c-w">{w}</td>
-                <td className="c-mid">
-                  <ClassBadge type={c} size={16} />
-                  <span style={{ color: META[c].color }}>{META[c].label}</span>
-                </td>
-                <td className="c-b">{b}</td>
-              </tr>
-            )
-          })}
+          <tr className="sum-names">
+            <td />
+            <td>{whiteName}</td>
+            <td />
+            <td>{blackName}</td>
+          </tr>
+          <tr className="sum-players">
+            <td className="sum-label">Players</td>
+            <td><Avatar /></td>
+            <td />
+            <td><Avatar /></td>
+          </tr>
+          <tr className="sum-accuracy">
+            <td className="sum-label">Accuracy</td>
+            <td><span className="pill pill-white">{white.accuracy.toFixed(1)}</span></td>
+            <td />
+            <td><span className="pill pill-dark">{black.accuracy.toFixed(1)}</span></td>
+          </tr>
         </tbody>
       </table>
 
-      <div className="elo-row">
-        <div>
-          <div className="elo-num">{white.estimatedElo}</div>
-          <div className="elo-lbl">Est. performance</div>
-        </div>
-        <div>
-          <div className="elo-num">{black.estimatedElo}</div>
-          <div className="elo-lbl">Est. performance</div>
-        </div>
-      </div>
+      <div className="sum-divider" />
+
+      <table className="sum-table sum-counts">
+        <tbody>
+          {SUMMARY_ORDER.map((c) => (
+            <tr key={c}>
+              <td className="cnt-label" style={{ color: META[c].color }}>
+                {META[c].label}
+              </td>
+              <td className="cnt-num" style={{ color: META[c].color }}>
+                {white.counts[c]}
+              </td>
+              <td className="cnt-icon">
+                <ClassIcon type={c} size={24} />
+              </td>
+              <td className="cnt-num" style={{ color: META[c].color }}>
+                {black.counts[c]}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="sum-divider" />
+
+      <table className="sum-table">
+        <tbody>
+          <tr className="sum-rating">
+            <td className="sum-label">Game Rating</td>
+            <td><span className="pill pill-white">{white.estimatedElo}</span></td>
+            <td />
+            <td><span className="pill pill-dark">{black.estimatedElo}</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   )
 }

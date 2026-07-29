@@ -8,8 +8,28 @@
 export const isThreaded =
   typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated === true
 
+// The multi-threaded build allocates a FIXED 512 MiB SharedArrayBuffer up front
+// (initial == maximum). On memory-constrained browsers/devices that reservation
+// throws "WebAssembly.Memory(): could not allocate memory" and the worker (plus
+// its nested pthread workers) crashes. So we probe that exact allocation first
+// and only take the threaded path if it succeeds — otherwise we never create the
+// doomed worker and use the reliable single-threaded build from the start.
+function canUseThreads(): boolean {
+  if (!isThreaded || typeof SharedArrayBuffer === 'undefined') return false
+  try {
+    // 8192 pages * 64 KiB = 512 MiB, matching the MT build's fixed memory.
+    // eslint-disable-next-line no-new
+    new WebAssembly.Memory({ initial: 8192, maximum: 8192, shared: true })
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const useThreads = canUseThreads()
+
 // Threads to give the engine (leave one core for the UI). 1 when single-threaded.
-export const engineThreads = isThreaded
+export const engineThreads = useThreads
   ? Math.max(1, Math.min(16, (navigator.hardwareConcurrency || 4) - 1))
   : 1
 
@@ -39,9 +59,9 @@ export class Engine {
   private busy = false
   private current: Pending | null = null
 
-  // What the engine actually ended up running as (may differ from isThreaded
-  // if the multi-threaded build failed to init and we fell back).
-  public threaded = isThreaded
+  // What the engine actually ended up running as. Starts from the memory probe
+  // (useThreads) and may still drop to single-threaded if boot() fails anyway.
+  public threaded = useThreads
   public threads = engineThreads
 
   private send(cmd: string) {

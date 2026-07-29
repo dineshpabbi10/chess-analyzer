@@ -39,30 +39,41 @@ export function App() {
   const [analyzed, setAnalyzed] = useState({ done: 0, total: 0 })
   const [engineLoading, setEngineLoading] = useState(false)
 
-  // Cache the engine as a promise so concurrent callers (and the background
-  // preload below) share a single instance instead of racing to create two.
+  // A ready engine is kept in engineRef; an in-flight load is shared via
+  // enginePromiseRef so concurrent callers (and the background preload) don't
+  // create two. Crucially, a FAILED load is not cached — we drop it so the next
+  // attempt retries fresh (and Engine.init falls back to single-threaded).
+  const engineRef = useRef<Engine | null>(null)
   const enginePromiseRef = useRef<Promise<Engine> | null>(null)
   const cancelRef = useRef(false)
 
   const getEngine = useCallback(() => {
+    if (engineRef.current) return Promise.resolve(engineRef.current)
     if (!enginePromiseRef.current) {
       setEngineLoading(true)
-      enginePromiseRef.current = (async () => {
+      const p = (async () => {
         const e = new Engine()
         await e.init()
-        setEngineLoading(false)
+        engineRef.current = e
         return e
       })()
+      p.then(
+        () => setEngineLoading(false),
+        () => {
+          setEngineLoading(false)
+          enginePromiseRef.current = null // allow a fresh retry after a failure
+        },
+      )
+      enginePromiseRef.current = p
     }
     return enginePromiseRef.current
   }, [])
 
   // Warm up Stockfish in the background as soon as the app opens, so it's ready
-  // by the time you paste a link and hit Analyze (no "Loading engine" wait).
+  // by the time you paste a link and hit Analyze (no "Loading engine" wait). A
+  // warm-up failure is swallowed here; Analyze will retry on demand.
   useEffect(() => {
-    getEngine().catch(() => {
-      /* if warm-up fails, runAnalysis will surface the error on demand */
-    })
+    getEngine().catch(() => {})
   }, [getEngine])
 
   const runAnalysis = useCallback(
@@ -96,7 +107,14 @@ export function App() {
         setAnalyzed({ done: 0, total: parsed.positions.length })
         setView('review')
 
-        const engine = await getEngine()
+        // If a background warm-up failed (or is failing in-flight), retry once
+        // with a fresh engine so a flaky preload never blocks an actual analysis.
+        let engine: Engine
+        try {
+          engine = await getEngine()
+        } catch {
+          engine = await getEngine()
+        }
         await analyzeStreaming(parsed, engine, {
           depth,
           onProgress: (done, total) => setAnalyzed({ done, total }),

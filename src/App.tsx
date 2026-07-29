@@ -39,19 +39,31 @@ export function App() {
   const [analyzed, setAnalyzed] = useState({ done: 0, total: 0 })
   const [engineLoading, setEngineLoading] = useState(false)
 
-  const engineRef = useRef<Engine | null>(null)
+  // Cache the engine as a promise so concurrent callers (and the background
+  // preload below) share a single instance instead of racing to create two.
+  const enginePromiseRef = useRef<Promise<Engine> | null>(null)
   const cancelRef = useRef(false)
 
-  const getEngine = useCallback(async () => {
-    if (!engineRef.current) {
+  const getEngine = useCallback(() => {
+    if (!enginePromiseRef.current) {
       setEngineLoading(true)
-      const e = new Engine()
-      await e.init()
-      engineRef.current = e
-      setEngineLoading(false)
+      enginePromiseRef.current = (async () => {
+        const e = new Engine()
+        await e.init()
+        setEngineLoading(false)
+        return e
+      })()
     }
-    return engineRef.current
+    return enginePromiseRef.current
   }, [])
+
+  // Warm up Stockfish in the background as soon as the app opens, so it's ready
+  // by the time you paste a link and hit Analyze (no "Loading engine" wait).
+  useEffect(() => {
+    getEngine().catch(() => {
+      /* if warm-up fails, runAnalysis will surface the error on demand */
+    })
+  }, [getEngine])
 
   const runAnalysis = useCallback(
     async (rawInput: string) => {

@@ -186,6 +186,15 @@ export class Engine {
     })
   }
 
+  /**
+   * Ask the current search to finish early. The in-flight `analyze()` promise
+   * still resolves (with whatever depth it reached), so callers stay consistent.
+   * Used by the analysis board when the position changes mid-search.
+   */
+  stop() {
+    if (this.busy) this.send('stop')
+  }
+
   destroy() {
     try {
       this.send('quit')

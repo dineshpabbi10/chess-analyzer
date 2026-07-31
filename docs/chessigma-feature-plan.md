@@ -99,16 +99,17 @@ Implications for this plan:
 Ordered by **value ÷ effort**, front-loading things that reuse our engine and
 need **no backend**.
 
-### Phase 1 — Engine tools (no backend, days) — **3 of 4 shipped ✅**
+### Phase 1 — Engine tools (no backend) — **COMPLETE ✅**
 
 These are small, high-polish wins that reuse the existing `Engine` wrapper.
 
-> **Status:** Board Editor, Next Move and Elo Calculator are built and live, along
-> with the supporting infrastructure: a tiny History-API **router**
-> (`src/lib/router.tsx`), a shared lazy **engine singleton**
-> (`src/lib/engineSingleton.ts`) used by both the review page and the tools, a
-> responsive **nav / PageShell**, and Vercel SPA rewrites for deep links.
-> Remaining in this phase: the full Analysis Board (free play + variation tree).
+> **Status:** all four shipped — **Analysis Board** (free play, click-to-move with
+> legal-move dots, variation tree, live eval + PV, FEN/PGN load, `?fen=` in the
+> URL), **Board Editor**, **Next Move**, **Elo Calculator** — plus the supporting
+> infrastructure: a tiny History-API **router** (`src/lib/router.tsx`), a shared
+> lazy **engine singleton** (`src/lib/engineSingleton.ts`), a responsive **nav /
+> PageShell**, `Board` extended with an interactive mode, `Engine.stop()` for
+> responsive re-analysis, and Vercel SPA rewrites for deep links.
 
 1. **Board Editor** (`/tools/editor`)
    - Drag-drop pieces onto/off the board + palette; side-to-move, castling,
@@ -138,12 +139,15 @@ with zero backend.
 
 ### Phase 2 — Broader import + multi-game (no backend, days)
 
-5. **Import recent games by username**
-   - Extend `server/` proxy: `GET /api/games?platform=&user=` →
-     chess.com monthly archives / lichess `/api/games/user/{u}` → list recent
-     games (players, result, time control, date, id).
-   - Frontend: a username box → a **game picker** list → click to run the
-     existing review. This is chessigma's primary entry point.
+5. **Import recent games by username** — **DONE ✅**
+   - `GET /api/games?platform=&username=&max=` (in `shared/fetchPgn.js`, exposed by
+     both `server/index.js` and `api/games.js`): chess.com monthly archives /
+     lichess ndjson → a normalized list with the PGN inlined (so picking a game
+     analyzes with no second round-trip).
+   - Frontend `GamePicker`: platform toggle, username box, list with W/D/L badges,
+     ratings, time class and date; clicking a row runs the existing review.
+   - **Note:** lichess allows only ~1 concurrent request per IP and rate-limits
+     hard (HTTP 429) — handled with a friendly message.
    - *Effort: M.*
 
 6. **Blunder review (single game → drill positions)**

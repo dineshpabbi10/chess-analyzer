@@ -8,6 +8,12 @@ interface Props {
   classification?: Classification | null
   bestArrow?: { from: string; to: string } | null
   flipped?: boolean
+  /** Interactive mode: click a square (used by the analysis board). */
+  onSquareClick?: (square: string) => void
+  /** Currently picked-up square. */
+  selected?: string | null
+  /** Legal destinations for the selected piece — rendered as dots. */
+  targets?: string[]
 }
 
 function parseFen(fen: string): Map<string, string> {
@@ -35,8 +41,19 @@ function centerPct(sq: string, flipped: boolean) {
   return { x: (col + 0.5) * 12.5, y: (rowTop + 0.5) * 12.5 }
 }
 
-export function Board({ fen, lastMove, classification, bestArrow, flipped = false }: Props) {
+export function Board({
+  fen,
+  lastMove,
+  classification,
+  bestArrow,
+  flipped = false,
+  onSquareClick,
+  selected = null,
+  targets,
+}: Props) {
   const pieces = useMemo(() => parseFen(fen), [fen])
+  const targetSet = useMemo(() => new Set(targets ?? []), [targets])
+  const interactive = !!onSquareClick
 
   const squares: ReactElement[] = []
   for (let row = 0; row < 8; row++) {
@@ -48,8 +65,13 @@ export function Board({ fen, lastMove, classification, bestArrow, flipped = fals
       const piece = pieces.get(sq)
       const isLast = lastMove && (lastMove.from === sq || lastMove.to === sq)
       const showBadge = classification && lastMove && lastMove.to === sq
-      squares.push(
-        <div key={sq} className={`sq ${dark ? 'dark' : 'light'}${isLast ? ' hl' : ''}`}>
+      const cls =
+        `sq ${dark ? 'dark' : 'light'}` +
+        (isLast ? ' hl' : '') +
+        (selected === sq ? ' sel' : '') +
+        (interactive ? ' clickable' : '')
+      const inner = (
+        <>
           {col === 0 && <span className="coord rank">{rank}</span>}
           {row === 7 && <span className="coord file">{String.fromCharCode(97 + f)}</span>}
           {piece && (
@@ -60,15 +82,24 @@ export function Board({ fen, lastMove, classification, bestArrow, flipped = fals
               alt={piece}
             />
           )}
+          {targetSet.has(sq) && <span className={`dot${piece ? ' dot-capture' : ''}`} />}
           {showBadge && (
-            <span
-              className="sq-badge"
-              style={{ background: META[classification].color }}
-            >
+            <span className="sq-badge" style={{ background: META[classification].color }}>
               {META[classification].glyph}
             </span>
           )}
-        </div>,
+        </>
+      )
+      squares.push(
+        interactive ? (
+          <button key={sq} className={cls} onClick={() => onSquareClick!(sq)} aria-label={sq}>
+            {inner}
+          </button>
+        ) : (
+          <div key={sq} className={cls}>
+            {inner}
+          </div>
+        ),
       )
     }
   }

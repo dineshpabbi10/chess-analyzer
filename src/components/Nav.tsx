@@ -3,6 +3,7 @@ import { Link, useRoute } from '../lib/router'
 
 const LINKS = [
   { to: '/', label: 'Game Review' },
+  { to: '/tools/analysis', label: 'Analysis Board' },
   { to: '/tools/next-move', label: 'Next Move' },
   { to: '/tools/editor', label: 'Board Editor' },
   { to: '/tools/elo-calculator', label: 'Elo Calculator' },

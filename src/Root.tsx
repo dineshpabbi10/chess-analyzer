@@ -1,5 +1,6 @@
 import { App } from './App'
 import { PageShell } from './components/Nav'
+import { AnalysisBoard } from './pages/AnalysisBoard'
 import { BoardEditor } from './pages/BoardEditor'
 import { EloCalculator } from './pages/EloCalculator'
 import { NextMove } from './pages/NextMove'
@@ -22,6 +23,8 @@ function Routes() {
   switch (path) {
     case '/':
       return <App />
+    case '/tools/analysis':
+      return <AnalysisBoard />
     case '/tools/next-move':
       return <NextMove />
     case '/tools/editor':

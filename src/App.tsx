@@ -5,6 +5,7 @@ import { Link } from './lib/router'
 import { analyzeStreaming, computeReports, parseGame } from './lib/analysis'
 import type { GameReport } from './lib/types'
 import { Board } from './components/Board'
+import { GamePicker } from './components/GamePicker'
 import { EvalBar } from './components/EvalBar'
 import { MoveList } from './components/MoveList'
 import { ReviewSummary } from './components/ReviewSummary'
@@ -49,27 +50,13 @@ export function App() {
   const getEngine = getSharedEngine
   useEffect(() => onEngineLoading(setEngineLoading), [])
 
-  const runAnalysis = useCallback(
-    async (rawInput: string) => {
+  // Analyze a PGN we already have (used by the link/paste flow and by the
+  // "recent games" picker).
+  const analyzePgn = useCallback(
+    async (pgn: string) => {
       setError(null)
       cancelRef.current = false
-      setView('loading')
-      setProgress({ done: 0, total: 0, phase: 'Fetching game…' })
       try {
-        let pgn: string
-        if (looksLikePgn(rawInput)) {
-          pgn = rawInput
-        } else {
-          const res = await fetch('/api/pgn', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: rawInput.trim() }),
-          })
-          const data = await res.json()
-          if (!res.ok) throw new Error(data.error || 'Could not fetch that game.')
-          pgn = data.pgn
-        }
-
         // Build the skeleton and show the board immediately — before the engine
         // has even loaded. Classifications stream in move-by-move afterwards.
         const parsed = parseGame(pgn)
@@ -98,6 +85,34 @@ export function App() {
       }
     },
     [depth, getEngine],
+  )
+
+  const runAnalysis = useCallback(
+    async (rawInput: string) => {
+      setError(null)
+      setView('loading')
+      setProgress({ done: 0, total: 0, phase: 'Fetching game…' })
+      try {
+        let pgn: string
+        if (looksLikePgn(rawInput)) {
+          pgn = rawInput
+        } else {
+          const res = await fetch('/api/pgn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: rawInput.trim() }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Could not fetch that game.')
+          pgn = data.pgn
+        }
+        await analyzePgn(pgn)
+      } catch (e: any) {
+        setError(e?.message || 'Something went wrong.')
+        setView('input')
+      }
+    },
+    [analyzePgn],
   )
 
   const backToInput = useCallback(() => {
@@ -190,6 +205,16 @@ export function App() {
 
           {error && <div className="error">{error}</div>}
 
+          {view === 'input' && (
+            <GamePicker
+              onPick={(pgn) => {
+                setView('loading')
+                setProgress({ done: 0, total: 0, phase: 'Reading game…' })
+                analyzePgn(pgn)
+              }}
+            />
+          )}
+
           {view === 'loading' && (
             <div className="progress">
               <div className="progress-phase">{progress.phase}</div>
@@ -210,6 +235,9 @@ export function App() {
           )}
           <div className="tools-row">
             <span>Tools:</span>
+            <Link to="/tools/analysis" className="link">
+              Analysis Board
+            </Link>
             <Link to="/tools/next-move" className="link">
               Next Move
             </Link>

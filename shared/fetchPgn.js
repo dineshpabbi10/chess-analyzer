@@ -87,3 +87,120 @@ export async function fetchPgn(url) {
   const pgn = source === 'lichess' ? await fetchLichess(url) : await fetchChesscom(url)
   return { pgn, source }
 }
+
+// ---------------------------------------------------------------------------
+// Recent games by username (for the "load my games" picker).
+// Returns a normalized list: { id, url, white, black, whiteElo, blackElo,
+// result, timeClass, date, pgn }. PGN is included so picking a game analyzes
+// immediately with no second round-trip.
+// ---------------------------------------------------------------------------
+
+const DRAW_RESULTS = new Set([
+  'agreed',
+  'repetition',
+  'stalemate',
+  'insufficient',
+  '50move',
+  'timevsinsufficient',
+])
+
+function chesscomResult(white, black) {
+  if (white?.result === 'win') return '1-0'
+  if (black?.result === 'win') return '0-1'
+  if (DRAW_RESULTS.has(white?.result) || DRAW_RESULTS.has(black?.result)) return '1/2-1/2'
+  return '*'
+}
+
+async function recentChesscom(username, max) {
+  const user = encodeURIComponent(username.trim().toLowerCase())
+  const archRes = await fetch(`https://api.chess.com/pub/player/${user}/games/archives`, {
+    headers: { 'User-Agent': UA },
+  })
+  if (archRes.status === 404) throw new PgnError(`No chess.com player named "${username}".`, 404)
+  if (!archRes.ok) throw new PgnError(`chess.com returned ${archRes.status}.`)
+  const { archives = [] } = await archRes.json()
+  if (!archives.length) throw new PgnError(`"${username}" has no games on chess.com yet.`, 404)
+
+  // Walk back from the newest month until we have enough games (cap the work).
+  const out = []
+  for (const url of archives.slice(-3).reverse()) {
+    const res = await fetch(url, { headers: { 'User-Agent': UA } })
+    if (!res.ok) continue
+    const { games = [] } = await res.json()
+    for (const g of games) {
+      if (!g.pgn) continue
+      out.push({
+        id: String(g.url || '').split('/').pop() || '',
+        url: g.url || '',
+        white: g.white?.username || '?',
+        black: g.black?.username || '?',
+        whiteElo: g.white?.rating ?? null,
+        blackElo: g.black?.rating ?? null,
+        result: chesscomResult(g.white, g.black),
+        timeClass: g.time_class || 'unknown',
+        date: g.end_time ? new Date(g.end_time * 1000).toISOString() : null,
+        pgn: g.pgn,
+      })
+    }
+    if (out.length >= max) break
+  }
+  out.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+  return out.slice(0, max)
+}
+
+async function recentLichess(username, max) {
+  const user = encodeURIComponent(username.trim())
+  const url =
+    `https://lichess.org/api/games/user/${user}` +
+    `?max=${max}&pgnInJson=true&clocks=false&evals=false&opening=true`
+  const res = await fetch(url, {
+    headers: { Accept: 'application/x-ndjson', 'User-Agent': UA },
+  })
+  if (res.status === 404) throw new PgnError(`No lichess player named "${username}".`, 404)
+  // Lichess allows only one concurrent request per IP and rate-limits hard.
+  if (res.status === 429) {
+    throw new PgnError('Lichess is rate-limiting us right now — wait a few seconds and retry.', 429)
+  }
+  if (!res.ok) throw new PgnError(`Lichess returned ${res.status}.`)
+
+  const text = await res.text()
+  const out = []
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    let g
+    try {
+      g = JSON.parse(trimmed)
+    } catch {
+      continue
+    }
+    if (g.error) throw new PgnError(String(g.error), 502)
+    if (!g.pgn) continue
+    const w = g.players?.white
+    const b = g.players?.black
+    out.push({
+      id: g.id || '',
+      url: g.id ? `https://lichess.org/${g.id}` : '',
+      white: w?.user?.name || (w?.aiLevel ? `Stockfish lvl ${w.aiLevel}` : 'Anonymous'),
+      black: b?.user?.name || (b?.aiLevel ? `Stockfish lvl ${b.aiLevel}` : 'Anonymous'),
+      whiteElo: w?.rating ?? null,
+      blackElo: b?.rating ?? null,
+      result: g.winner === 'white' ? '1-0' : g.winner === 'black' ? '0-1' : '1/2-1/2',
+      timeClass: g.speed || 'unknown',
+      date: g.createdAt ? new Date(g.createdAt).toISOString() : null,
+      pgn: g.pgn,
+    })
+  }
+  return out.slice(0, max)
+}
+
+/** List a player's recent games. Throws PgnError (with .status) on failure. */
+export async function fetchRecentGames(platform, username, max = 20) {
+  if (!username || typeof username !== 'string' || !username.trim()) {
+    throw new PgnError('Missing "username".', 400)
+  }
+  const n = Math.max(1, Math.min(50, Number(max) || 20))
+  if (platform === 'chesscom') return recentChesscom(username, n)
+  if (platform === 'lichess') return recentLichess(username, n)
+  throw new PgnError('platform must be "chesscom" or "lichess".', 400)
+}

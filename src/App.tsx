@@ -245,6 +245,9 @@ export function App() {
           )}
           <div className="tools-row">
             <span>Tools:</span>
+            <Link to="/coach" className="link">
+              Coach
+            </Link>
             <Link to="/puzzles" className="link">
               Puzzles
             </Link>

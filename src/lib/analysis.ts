@@ -10,6 +10,9 @@ import {
 } from './classify'
 import type { AnalyzedMove, Classification, EngineEval, GameReport, PlayerReport } from './types'
 
+/** Ceiling for the *reported* centipawn loss of a single move (10 pawns). */
+export const CP_LOSS_CAP = 1000
+
 const EMPTY_COUNTS = (): Record<Classification, number> => ({
   brilliant: 0,
   great: 0,
@@ -126,6 +129,11 @@ export function computeReports(moves: AnalyzedMove[]): { white: PlayerReport; bl
 
 export interface StreamOptions {
   depth?: number
+  /**
+   * Cap each position's search in milliseconds. Bulk callers (the coach) set
+   * this so total time is predictable: positions x movetime.
+   */
+  movetime?: number
   onMove?: (index: number, move: AnalyzedMove) => void
   onProgress?: (done: number, total: number) => void
   isCancelled?: () => boolean
@@ -178,7 +186,11 @@ export async function analyzeStreaming(
       materialAfter: materialWhite(mv.fenAfter),
       moverIsWhite,
     })
-    mv.cpLoss = Math.max(0, bestEvalMover - playedEvalMover)
+    // Cap the reported loss. Mate is encoded as ±10000cp, so a "had mate, now
+    // getting mated" swing would otherwise read as ~190 pawns and wreck any
+    // average (ACPL). 1000cp = "catastrophic" is plenty. Safe to cap: the
+    // classifier above works off win% and the raw evals, never cpLoss.
+    mv.cpLoss = Math.min(CP_LOSS_CAP, Math.max(0, bestEvalMover - playedEvalMover))
     mv.winBefore = winBefore
     mv.winAfter = winAfter
     mv.accuracy = moveAccuracy(winBefore, winAfter)
@@ -193,7 +205,7 @@ export async function analyzeStreaming(
   const total = positions.length
   for (let p = 0; p < total; p++) {
     if (opts.isCancelled?.()) return
-    evals[p] = await engine.analyze(positions[p], { depth })
+    evals[p] = await engine.analyze(positions[p], { depth, movetime: opts.movetime })
     opts.onProgress?.(p + 1, total)
     if (p >= 1) finalize(p - 1) // move (p-1) needs evals[p-1] and evals[p]
   }

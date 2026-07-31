@@ -3,6 +3,7 @@ import { Link, useRoute } from '../lib/router'
 
 const LINKS = [
   { to: '/', label: 'Game Review' },
+  { to: '/coach', label: 'Coach' },
   { to: '/puzzles', label: 'Puzzles' },
   { to: '/openings', label: 'Openings' },
   { to: '/tools/analysis', label: 'Analysis Board' },

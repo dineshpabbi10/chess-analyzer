@@ -4,6 +4,7 @@ import { AnalysisBoard } from './pages/AnalysisBoard'
 import { BoardEditor } from './pages/BoardEditor'
 import { EloCalculator } from './pages/EloCalculator'
 import { NextMove } from './pages/NextMove'
+import { Coach } from './pages/Coach'
 import { Openings } from './pages/Openings'
 import { Puzzles } from './pages/Puzzles'
 import { Link, RouterProvider, useRoute } from './lib/router'
@@ -25,6 +26,8 @@ function Routes() {
   switch (path) {
     case '/':
       return <App />
+    case '/coach':
+      return <Coach />
     case '/openings':
       return <Openings />
     case '/puzzles':

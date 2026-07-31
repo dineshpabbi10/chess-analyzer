@@ -932,3 +932,64 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .op-trainer { grid-template-columns: 1fr; }
   .op-board { max-width: 600px; margin: 0 auto; }
 }
+
+/* ================= Coach ================= */
+.coach-setup { max-width: 560px; }
+.coach-input {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  padding: 13px 14px;
+  font-size: 16px;
+  outline: none;
+}
+.coach-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(129,182,76,0.18); }
+.coach-phase { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+
+.coach-top { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.coach-top .pz-stat { flex: 1 1 140px; }
+
+.coach-brief { margin-bottom: 16px; border-left: 4px solid var(--green); }
+.coach-brief-head { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+.coach-insights { margin: 0; padding-left: 20px; }
+.coach-insights li { font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+
+.coach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.coach-sec { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+
+.coach-row { display: grid; grid-template-columns: 1fr 90px 76px; gap: 10px; align-items: center; margin-bottom: 9px; }
+.coach-row-label { font-size: 13px; color: var(--muted); }
+.coach-bar { height: 8px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+.coach-bar-fill { height: 100%; background: var(--green); border-radius: 999px; }
+.coach-bar-fill.weak { background: #e58f2a; }
+.coach-bar-fill.danger { background: #ca3431; }
+.coach-row-val { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.coach-row-sub { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+
+.coach-openings { width: 100%; border-collapse: collapse; }
+.coach-openings td { padding: 6px 4px; font-size: 13px; }
+.co-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-games, .co-score, .co-acc { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.co-acc { font-weight: 700; color: var(--text); }
+
+.coach-worst { margin-top: 16px; }
+.coach-worst-list { list-style: none; margin: 0; padding: 0; }
+.coach-worst-list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0; border-top: 1px solid var(--line); font-size: 13.5px;
+}
+.coach-worst-list li:first-child { border-top: none; }
+.cw-move { font-weight: 700; min-width: 78px; }
+.cw-best { color: var(--muted); }
+.cw-best b { color: var(--green); }
+.cw-loss { margin-left: auto; font-weight: 800; color: #e2695a; font-variant-numeric: tabular-nums; }
+.cw-game { color: var(--muted); font-size: 12px; min-width: 130px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.coach-actions { margin-top: 18px; }
+
+@media (max-width: 620px) {
+  .coach-worst-list li { flex-wrap: wrap; }
+  .cw-game { min-width: 0; text-align: left; width: 100%; }
+  .coach-row { grid-template-columns: 1fr 60px 66px; }
+}

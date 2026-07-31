@@ -230,7 +230,32 @@ This is the big lift and gates the "sticky" features. **Decision required** (§6
 12. **"Wrapped" / year-in-review** — aggregate a player's year of games into a
     shareable summary. *Effort: M* on top of import + analysis.
 
-### Phase 6 — AI Coach (the flagship differentiator)
+### Phase 6 — Coach — **scoped version DONE ✅**
+
+> Shipped as `/coach`: enter a username, pick **5 / 10 / 20** recent games, and it
+> bulk-analyzes them in the browser and aggregates the results for *your side
+> only*. Each position is capped at 180ms so the wait is predictable (shown up
+> front as an estimate) and cancellable.
+>
+> Dashboard: accuracy, pawns-lost-per-move (ACPL), W–L–D, serious errors,
+> **accuracy by phase**, **blunder rate over time** (which stretch of the game
+> leaks), move-quality totals, per-opening score/accuracy, and your costliest
+> moments with the move you should have played.
+>
+> The written brief is **rule-based, not generated prose** — every sentence
+> restates a number that is also on the dashboard, so it can't invent anything.
+> Deliberate trade-off: less fluent than an LLM summary, but never wrong. Wiring
+> an LLM over these same computed stats is the obvious upgrade.
+>
+> Found and fixed while verifying this: `cpLoss` had no ceiling, so a
+> mate-to-getting-mated swing (mate is encoded as ±10000cp) reported as
+> "−94 pawns" and wrecked ACPL. Now capped at 1000cp — safe, because
+> classification keys off win% and raw evals, never `cpLoss`.
+
+Still open (needs accounts, Phase 5): tracking these numbers *over time*,
+cross-device sync, and comparing against a rating band.
+
+### Original Phase 6 sketch (for reference)
 
 13. **Multi-game coach report** (`/coach`)
     - Analyze a player's last ~25 games (bulk review), then compute **aggregate

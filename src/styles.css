@@ -820,3 +820,44 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .drill { padding: 16px; }
   .drill-overlay { padding: 10px; align-items: flex-start; }
 }
+
+/* ================= Puzzles ================= */
+.pz-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.pz-stat {
+  flex: 1 1 120px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 13px 15px;
+}
+.pz-stat-num { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pz-best { font-size: 15px; color: var(--muted); font-weight: 700; }
+.pz-stat-lbl { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.pz-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.pz-themes { opacity: 0.95; }
+.pz-loading { color: var(--muted); font-size: 14px; padding: 20px 0; }
+
+.pz-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; align-items: start; }
+.pz-board { width: 100%; }
+.pz-board .board { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); }
+.pz-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.pz-prompt { border-left: 4px solid var(--line); }
+.pz-prompt.status-solved { border-left-color: var(--green); background: rgba(129, 182, 76, 0.1); }
+.pz-prompt.status-wrong { border-left-color: #ca3431; background: rgba(202, 52, 49, 0.1); }
+.pz-prompt.status-revealed { border-left-color: #f0c15c; }
+.pz-turn { font-size: 17px; font-weight: 800; }
+.pz-good { color: var(--green); }
+.pz-bad { color: #e2695a; }
+.pz-hint { color: var(--muted); font-size: 13.5px; margin-top: 5px; line-height: 1.55; }
+.pz-hint b { color: var(--text); }
+
+.pz-meta { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.pz-meta b { color: var(--text); }
+.pz-themes-list { font-size: 12px; opacity: 0.85; }
+
+@media (max-width: 900px) {
+  .pz-grid { grid-template-columns: 1fr; }
+  .pz-board { max-width: 600px; margin: 0 auto; }
+}

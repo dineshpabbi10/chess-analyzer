@@ -161,21 +161,45 @@ with zero backend.
      and the best move shown as an arrow once answered.
    - *Effort: S–M* (reuses analysis output).
 
-### Phase 3 — Puzzles (needs data; persistence optional at first)
+### Phase 3 — Puzzles (no data hosting needed — use the Lichess puzzle API)
+
+> **Revised after live testing.** We do **not** need to bundle or host the puzzle
+> database. Lichess serves puzzles from a public API with **no auth** and
+> `Access-Control-Allow-Origin: *`, so the **browser fetches them directly** —
+> each user hits Lichess from their own IP, so there's no shared rate-limit
+> bottleneck, no storage, and no cost for us.
+>
+> Verified endpoints (all 200, no token):
+> - `GET /api/puzzle/next` — supports `difficulty=easiest|easier|normal|harder|hardest`
+>   and `angle=<theme>` (e.g. `mateIn2`). Repeat calls return different puzzles.
+> - `GET /api/puzzle/daily` — same puzzle for everyone → daily puzzle + streaks.
+> - Response: `puzzle.{id, fen, solution[] (UCI), rating, themes, initialPly,
+>   lastMove}` + `game.{pgn, players, …}`.
+>
+> **Use `puzzle.fen` directly** — verified that the solution replays legally from
+> it (e.g. `Rxf1+ Qxf1 Qg1+ Qxg1 Rxg1#`, ending in mate, matching its `mateIn3`
+> theme). No PGN replay needed.
+>
+> Because `puzzle.rating` comes back with every puzzle, our **Elo math is exact**
+> even unauthenticated: we track the user's rating locally and score it against
+> the puzzle's own rating. (Unauthenticated `difficulty` is relative to a default,
+> not the user, so we map our tracked rating → difficulty bucket ourselves.)
+>
+> Trade-off: puzzles need network, unlike the rest of the app which works offline.
+> Mitigation: prefetch/cache a few puzzles for offline play.
+> chess.com's `/pub/puzzle/random` exists too but has no rating or solution array,
+> so it isn't suitable for rated training.
 
 7. **Tactics puzzles** (`/puzzles`)
-   - **Data:** the **Lichess open puzzle database** (~4–5 M puzzles, CC0, CSV:
-     FEN, moves, rating, themes). Ship a curated subset statically, or host the
-     CSV/DB behind an endpoint and page through it.
-   - **UX:** show position → user plays the solution moves → validate against the
-     puzzle's move list; hints via engine; next puzzle by rating band.
-   - **Adaptive rating** (Elo up/down per solve) → needs **persistence** to be
-     meaningful (Phase 5); start with localStorage, upgrade to accounts later.
-   - *Effort: L* (data plumbing + solver UX + rating logic).
+   - **UX:** show the position → user plays the solution moves (validate against
+     `solution`, opponent replies played automatically) → next puzzle chosen by
+     the user's tracked rating; engine available for a hint.
+   - **Adaptive rating:** standard Elo against `puzzle.rating`, stored in
+     localStorage (upgrade to accounts in Phase 5 for cross-device sync).
+   - *Effort: M* (solver UX + rating logic; no data plumbing).
 
 8. **Daily puzzle + streak** (`/daily`)
-   - One deterministic puzzle per day (seed by date). Streak counter.
-   - localStorage first; server-backed streak once accounts exist.
+   - `/api/puzzle/daily` + a localStorage streak counter.
    - *Effort: S* (on top of #7).
 
 ### Phase 4 — Opening Trainer (needs line data)

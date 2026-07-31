@@ -4,6 +4,7 @@ import { Link, useRoute } from '../lib/router'
 const LINKS = [
   { to: '/', label: 'Game Review' },
   { to: '/puzzles', label: 'Puzzles' },
+  { to: '/openings', label: 'Openings' },
   { to: '/tools/analysis', label: 'Analysis Board' },
   { to: '/tools/next-move', label: 'Next Move' },
   { to: '/tools/editor', label: 'Board Editor' },

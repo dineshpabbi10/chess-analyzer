@@ -248,6 +248,9 @@ export function App() {
             <Link to="/puzzles" className="link">
               Puzzles
             </Link>
+            <Link to="/openings" className="link">
+              Openings
+            </Link>
             <Link to="/tools/analysis" className="link">
               Analysis Board
             </Link>

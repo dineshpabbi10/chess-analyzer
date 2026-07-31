@@ -202,15 +202,20 @@ with zero backend.
    - `/api/puzzle/daily` + a localStorage streak counter.
    - *Effort: S* (on top of #7).
 
-### Phase 4 — Opening Trainer (needs line data)
+### Phase 4 — Opening Trainer — **DONE ✅**
 
 9. **Opening Trainer** (`/openings`)
-   - **Data:** a set of opening **line trees** (main line + key responses). Source
-     from an ECO/opening dataset and/or hand-curate a handful of popular openings
-     (Italian, Ruy Lopez, Caro-Kann, London, Sicilian…).
-   - **UX:** user plays their side; the board replies with book moves; track
-     "N/M lines learned" with spaced repetition. Filters (side, style, difficulty).
-   - *Effort: L* (curating quality lines is the bulk of the work).
+   - **Data:** hand-curated line lists in `src/lib/openings.ts` — 6 openings
+     (Italian, Ruy Lopez, London, Sicilian, Caro-Kann, French), 14 lines. Kept
+     **static on purpose** so the trainer works offline and the lines are *taught*
+     rather than being "whatever move is most popular".
+   - Every line was validated against chess.js: all legal, and all SAN matches
+     chess.js's canonical output exactly (so check/capture annotations are right).
+   - **UX:** learner plays their side, book replies auto-play after a short beat;
+     wrong move → retry, second wrong → the move is revealed; completing a line
+     marks it learned and shows the idea behind it. Side filter, per-opening
+     "N/M learned", line picker with ✔ marks. Progress in localStorage.
+   - When the learner is Black, White's first move is pre-played automatically.
 
 ### Phase 5 — Accounts, persistence & social (architectural)
 

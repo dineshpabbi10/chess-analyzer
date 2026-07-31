@@ -6,6 +6,7 @@ import { analyzeStreaming, computeReports, parseGame } from './lib/analysis'
 import type { GameReport } from './lib/types'
 import { Board } from './components/Board'
 import { GamePicker } from './components/GamePicker'
+import { BlunderDrill } from './components/BlunderDrill'
 import { EvalBar } from './components/EvalBar'
 import { MoveList } from './components/MoveList'
 import { ReviewSummary } from './components/ReviewSummary'
@@ -41,6 +42,7 @@ export function App() {
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzed, setAnalyzed] = useState({ done: 0, total: 0 })
   const [engineLoading, setEngineLoading] = useState(false)
+  const [drilling, setDrilling] = useState(false)
 
   const cancelRef = useRef(false)
 
@@ -151,6 +153,14 @@ export function App() {
     const uci = curMove.evalBefore.bestMove
     return { from: uci.slice(0, 2), to: uci.slice(2, 4) }
   }, [curMove])
+
+  const mistakeCount = useMemo(
+    () =>
+      moves.filter(
+        (m) => m.classification === 'blunder' || m.classification === 'mistake' || m.classification === 'miss',
+      ).length,
+    [moves],
+  )
 
   if (view === 'input' || view === 'loading') {
     return (
@@ -267,10 +277,26 @@ export function App() {
           <span className="vs">vs</span>
           <span>{rep.headers.Black || 'Black'}</span>
         </div>
-        <button className="ghost" onClick={backToInput}>
-          New game
-        </button>
+        <div className="topbar-actions">
+          {mistakeCount > 0 && (
+            <button className="ghost drill-open" onClick={() => setDrilling(true)}>
+              Drill mistakes ({mistakeCount})
+            </button>
+          )}
+          <button className="ghost" onClick={backToInput}>
+            New game
+          </button>
+        </div>
       </header>
+
+      {drilling && (
+        <BlunderDrill
+          moves={moves}
+          whiteName={rep.headers.White || 'White'}
+          blackName={rep.headers.Black || 'Black'}
+          onClose={() => setDrilling(false)}
+        />
+      )}
 
       <div className="review-grid">
         <div className="board-col">

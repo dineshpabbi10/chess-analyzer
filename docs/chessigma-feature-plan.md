@@ -150,10 +150,15 @@ with zero backend.
      hard (HTTP 429) — handled with a friendly message.
    - *Effort: M.*
 
-6. **Blunder review (single game → drill positions)**
-   - After a review, collect the positions right before each Mistake/Blunder/Miss
-     and let the user try to find the better move (we already know the engine's
-     best move). A lightweight "solve your own mistakes" mode — no external data.
+6. **Blunder review (single game → drill positions)** — **DONE ✅**
+   - "Drill mistakes (N)" on the review screen opens an overlay that replays the
+     position before each Mistake/Blunder/Miss and asks for a better move.
+   - Grading is *tolerant*: the played move is analyzed and compared to the best
+     available — within 0.50 counts as solved, within 1.50 as "better but not
+     best", worse than that as wrong. (Demanding the exact engine move would be
+     needlessly harsh since positions often have several good moves.)
+   - Side filter (both / each player by name), prev/next, score, reveal-answer,
+     and the best move shown as an arrow once answered.
    - *Effort: S–M* (reuses analysis output).
 
 ### Phase 3 — Puzzles (needs data; persistence optional at first)

@@ -446,3 +446,168 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .acc-num { font-size: 24px; }
   .details-eval { font-size: 16px; }
 }
+
+/* ================= Tool pages (nav + shared layout) ================= */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: relative;
+  flex-wrap: wrap;
+}
+.nav-brand { font-weight: 800; font-size: 17px; color: var(--text); text-decoration: none; white-space: nowrap; }
+.nav-toggle {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 15px;
+}
+.nav-links { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-link:hover { color: var(--text); background: var(--panel-2); }
+.nav-link.active { background: var(--green); color: #fff; }
+
+.page { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+.page-main { width: 100%; max-width: 1100px; margin: 0 auto; padding: 28px 20px 40px; }
+.page-title { margin: 0 0 6px; font-size: 27px; }
+.page-sub { color: var(--muted); margin: 0 0 24px; font-size: 15px; line-height: 1.5; max-width: 70ch; }
+
+.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.tool-grid-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+}
+.card-board { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.card-board .board-stack { width: 100%; }
+
+.field { display: block; margin-bottom: 16px; }
+.field > span { display: block; color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 7px; }
+.field input[type='number'], .field textarea {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  padding: 12px 13px;
+  font-size: 16px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+}
+.field textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.5; }
+.field input:focus, .field textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.18);
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.btn-link { display: inline-block; text-decoration: none; padding: 12px 22px; border-radius: 10px; }
+.muted-note { color: var(--muted); font-size: 12.5px; line-height: 1.55; margin: 14px 0 0; }
+
+/* Elo calculator outcomes */
+.outcome-list { display: flex; flex-direction: column; gap: 10px; }
+.outcome {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.outcome-win { border-left-color: var(--green); }
+.outcome-draw { border-left-color: #f0c15c; }
+.outcome-loss { border-left-color: #ca3431; }
+.outcome-label { font-weight: 700; font-size: 15px; }
+.outcome-delta { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.outcome-win .outcome-delta { color: var(--green); }
+.outcome-draw .outcome-delta { color: #f0c15c; }
+.outcome-loss .outcome-delta { color: #e2695a; }
+.outcome-after { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+/* Next-move result */
+.result { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 0; }
+.result-label { color: var(--muted); font-size: 13px; font-weight: 600; }
+.result-best { font-size: 22px; font-weight: 800; color: var(--green); }
+.result-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+.result-pv { margin-top: 8px; }
+.pv-moves {
+  margin-top: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--panel-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  word-spacing: 3px;
+}
+
+/* Board editor */
+.editor-board { width: 100%; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); }
+.ed-sq { border: none; padding: 0; cursor: pointer; }
+.ed-sq:hover { box-shadow: inset 0 0 0 3px rgba(129, 182, 76, 0.85); }
+.palette { display: flex; flex-direction: column; gap: 8px; }
+.palette-row { display: flex; gap: 8px; }
+.palette-btn {
+  width: 46px;
+  height: 46px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.palette-btn img { width: 100%; height: 100%; }
+.palette-btn:hover { border-color: var(--green); }
+.palette-btn.on { border-color: var(--green); background: rgba(129, 182, 76, 0.18); }
+.palette-btn.erase { width: auto; padding: 0 16px; color: var(--text); font-size: 13px; font-weight: 600; }
+
+.tools-row { margin-top: 14px; color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tools-row .link { text-decoration: underline; }
+
+@media (max-width: 860px) {
+  .tool-grid, .tool-grid-board { grid-template-columns: 1fr; }
+  .card-board { order: -1; }
+}
+@media (max-width: 700px) {
+  .nav-toggle { display: block; }
+  .nav-links {
+    display: none;
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 10px;
+  }
+  .nav-links.open { display: flex; }
+  .nav-link { padding: 11px 12px; border-radius: 8px; }
+  .page-main { padding: 20px 14px 32px; }
+  .page-title { font-size: 23px; }
+  .card { padding: 16px; }
+}

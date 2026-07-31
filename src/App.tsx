@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Engine } from './lib/engine'
+import type { Engine } from './lib/engine'
+import { getSharedEngine, onEngineLoading } from './lib/engineSingleton'
+import { Link } from './lib/router'
 import { analyzeStreaming, computeReports, parseGame } from './lib/analysis'
 import type { GameReport } from './lib/types'
 import { Board } from './components/Board'
@@ -39,22 +41,13 @@ export function App() {
   const [analyzed, setAnalyzed] = useState({ done: 0, total: 0 })
   const [engineLoading, setEngineLoading] = useState(false)
 
-  // The engine is created lazily on the first Analyze (not eagerly on mount) and
-  // cached for the session. A failed load leaves engineRef null, so the next
-  // Analyze retries fresh (and Engine.init falls back to single-threaded).
-  const engineRef = useRef<Engine | null>(null)
   const cancelRef = useRef(false)
 
-  const getEngine = useCallback(async () => {
-    if (!engineRef.current) {
-      setEngineLoading(true)
-      const e = new Engine()
-      await e.init()
-      engineRef.current = e
-      setEngineLoading(false)
-    }
-    return engineRef.current
-  }, [])
+  // The engine is shared with the tool pages and created lazily on the first
+  // Analyze (never eagerly on mount — booting a WASM worker during page load can
+  // fail). A failed load isn't cached, so the next Analyze retries fresh.
+  const getEngine = getSharedEngine
+  useEffect(() => onEngineLoading(setEngineLoading), [])
 
   const runAnalysis = useCallback(
     async (rawInput: string) => {
@@ -215,8 +208,20 @@ export function App() {
               )}
             </div>
           )}
+          <div className="tools-row">
+            <span>Tools:</span>
+            <Link to="/tools/next-move" className="link">
+              Next Move
+            </Link>
+            <Link to="/tools/editor" className="link">
+              Board Editor
+            </Link>
+            <Link to="/tools/elo-calculator" className="link">
+              Elo Calculator
+            </Link>
+          </div>
         </div>
-        <footer className="foot">Runs entirely on your machine · Stockfish 16 NNUE via WebAssembly</footer>
+        <footer className="foot">Runs entirely on your machine · Stockfish via WebAssembly</footer>
       </div>
     )
   }

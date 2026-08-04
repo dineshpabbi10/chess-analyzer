@@ -1,0 +1,63 @@
+# Decap CMS configuration.
+#
+# Content lives in this git repo — the CMS commits Markdown straight to GitHub,
+# so there is no external content service and posts authored here are identical
+# to posts committed by hand.
+#
+# Auth uses our own OAuth route handlers (app/api/auth, app/api/callback) rather
+# than a third-party proxy, so `base_url` is this site itself.
+backend:
+  name: github
+  repo: dineshpabbi10/chess-analyzer
+  branch: main
+  base_url: https://chess-analyzer-ruddy.vercel.app
+  auth_endpoint: api/auth
+
+# Images uploaded in the editor are committed to public/uploads and served from /uploads.
+media_folder: public/uploads
+public_folder: /uploads
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: blog
+    label: Blog posts
+    label_singular: Blog post
+    folder: content/blog
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    summary: '{{title}} — {{date | date("YYYY-MM-DD")}}'
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - {
+          name: description,
+          label: Meta description,
+          widget: text,
+          hint: One or two sentences. Shown in Google results and on the blog index — aim for 120–160 characters.,
+        }
+      - { name: date, label: Publish date, widget: datetime }
+      - {
+          name: tags,
+          label: Tags,
+          widget: list,
+          required: false,
+          default: [improvement],
+        }
+      - {
+          name: cover,
+          label: Cover image,
+          widget: image,
+          required: false,
+          hint: Optional. Used for social sharing previews.,
+        }
+      - {
+          name: draft,
+          label: Draft,
+          widget: boolean,
+          default: false,
+          hint: Drafts are hidden from the live site but visible in local development.,
+        }
+      - { name: body, label: Body, widget: markdown }

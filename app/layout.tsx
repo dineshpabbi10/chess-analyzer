@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { AppShell } from '../src/components/AppShell'
 import { ServiceWorker } from '../src/components/ServiceWorker'
+import { SITE_URL } from '../src/lib/site'
 import '../src/styles.css'
-
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess-analyzer-ruddy.vercel.app'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

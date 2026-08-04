@@ -15,7 +15,7 @@
  */
 // Bump VERSION whenever the precached asset list changes — activate() deletes
 // caches that don't match, which is what evicts the old engine build.
-const VERSION = 'v3'
+const VERSION = 'v4'
 const APP_CACHE = `fca-app-${VERSION}`
 const ENGINE_CACHE = `fca-engine-${VERSION}`
 
@@ -31,13 +31,14 @@ self.addEventListener('install', (event) => {
     (async () => {
       const appCache = await caches.open(APP_CACHE)
 
-      // 1) Fetch the shell, cache it (with its COOP/COEP headers), and parse out
-      //    the hashed asset URLs it references so they're cached too.
+      // 1) Fetch the shell, cache it, and parse out the hashed asset URLs it
+      //    references so those are cached too.
       const res = await fetch('/', { cache: 'no-cache' })
       await appCache.put('/', res.clone())
       const html = await res.text()
       const assets = new Set()
-      const re = /(?:src|href)="(\/assets\/[^"]+)"/g
+      // Next.js emits hashed chunks under /_next/static (Vite used /assets).
+      const re = /(?:src|href)="(\/_next\/static\/[^"]+)"/g
       let m
       while ((m = re.exec(html))) assets.add(m[1])
       await appCache.addAll([...assets, ...SHELL_EXTRAS])
@@ -77,7 +78,8 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return // let cross-origin requests pass through
-  if (url.pathname.startsWith('/api/')) return // never intercept the PGN proxy
+  if (url.pathname.startsWith('/api/')) return // never intercept the API routes
+  if (url.pathname.startsWith('/admin')) return // the CMS must always be fresh
 
   // App shell — network-first so we pick up new deploys, cache "/" for offline.
   if (request.mode === 'navigate') {

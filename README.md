@@ -14,8 +14,9 @@ chess.com or lichess game link, and it fetches the game, runs **Stockfish 18
 - Full move-by-move navigation (click a move, use the arrow buttons, or the
   keyboard `←` `→` `Home` `End`, and `f` to flip the board).
 
-Everything runs locally — the engine is WebAssembly in your browser, and a tiny
-Node proxy only fetches the game PGN (to get around browser CORS).
+Everything analysis-related runs locally — the engine is WebAssembly in your
+browser. The server only fetches game PGNs (to get around browser CORS) and
+renders pages/blog posts.
 
 ## Install it (PWA)
 
@@ -34,12 +35,16 @@ fetching a game *by link* needs a connection. The install requires HTTPS (or
 `localhost`), which the Vercel deploy provides automatically.
 
 PWA pieces live in `public/manifest.webmanifest`, `public/sw.js`, and
-`public/icons/`; the service worker is registered from `src/main.tsx` (production
-builds only).
+`public/icons/`; the service worker is registered by
+`src/components/ServiceWorker.tsx` (production builds only).
 
 ## Requirements
 
-- Node.js 18+ (tested on 18.16)
+- **Node.js 20** (Next.js 15 requires >= 18.18). An `.nvmrc` is included:
+
+```bash
+nvm use
+```
 
 ## Run
 
@@ -48,12 +53,14 @@ npm install
 npm run dev
 ```
 
-Then open **http://localhost:5173**.
+Then open **http://localhost:3000**. The API routes (`/api/pgn`, `/api/games`) run
+in the same Next.js server — there is no separate proxy process any more.
 
-`npm run dev` starts two things:
+## Writing blog posts
 
-- the **PGN proxy** on `http://localhost:3001` (`server/index.js`)
-- the **Vite** dev server on `http://localhost:5173` (Vite proxies `/api` → 3001)
+Posts are Markdown in `content/blog/`. Write them in the browser at **`/admin`**
+(Decap CMS, commits to GitHub) or add files by hand. See
+[docs/cms-setup.md](docs/cms-setup.md) for the one-time GitHub OAuth setup.
 
 ## Deploy (Vercel — free)
 
@@ -63,14 +70,15 @@ Then open **http://localhost:5173**.
 > public repo once you've pushed it to GitHub — Vercel's Deploy button clones a
 > git repository into the user's account, so it needs a real URL to point at.
 
-The engine runs in the browser, so there's no analysis backend to host — only the
-tiny PGN proxy, which runs as a serverless function. It deploys to Vercel's free
-Hobby tier at $0.
+The engine runs in the browser, so there's no analysis backend to host. It deploys
+to Vercel's free Hobby tier at $0.
 
-- `vercel.json` — build config (`vite build` → `dist`) + long-cache headers for the
-  engine/piece assets.
-- `api/pgn.js` — the PGN proxy as a Vercel serverless function (`POST /api/pgn`).
-- `server/index.js` — the same logic for local dev; both share `shared/fetchPgn.js`.
+Vercel auto-detects Next.js, so there is no `vercel.json` to maintain. Caching
+headers for the engine and the service worker live in `next.config.mjs`, and
+`app/api/*` are the route handlers (they share `shared/fetchPgn.js`).
+
+To enable the CMS you must also set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+— see [docs/cms-setup.md](docs/cms-setup.md).
 
 **Option A — CLI (no git needed):**
 
@@ -81,8 +89,7 @@ vercel --prod # promote to production
 ```
 
 **Option B — GitHub:** push this folder to a repo, then "Add New Project" at
-vercel.com and import it. Vercel auto-detects Vite and the `api/` function — no
-extra settings.
+vercel.com and import it. Vercel auto-detects Next.js — no extra settings.
 
 Notes:
 - The engine is ~7 MB (`public/engine/stockfish-18-lite-single.*`) and must be
@@ -133,13 +140,19 @@ across their moves.
 ## Project layout
 
 ```
-server/index.js            PGN proxy (chess.com callback+archive, lichess export)
+app/                       Next.js App Router: one folder per route
+app/api/                   route handlers (pgn, games, CMS OAuth)
+app/blog/                  blog index + [slug], statically generated
+content/blog/              the posts themselves (Markdown + frontmatter)
+public/admin/              Decap CMS (config.yml + entry page)
+shared/fetchPgn.js         chess.com / lichess fetching, used by the API routes
 public/engine/             Stockfish 18 Lite, single-threaded WASM (net embedded)
 public/pieces/             cburnett SVG piece set
 src/lib/engine.ts          Stockfish Web Worker wrapper (UCI, MultiPV)
 src/lib/analysis.ts        Runs the engine over every position, builds the report
 src/lib/classify.ts        Win%, accuracy, and the classification rules
 src/components/            Board, EvalBar, MoveList, ReviewSummary, MoveDetails
+src/screens/               one component per page (named to avoid Next's pages/)
 src/App.tsx                Input screen + review screen
 ```
 

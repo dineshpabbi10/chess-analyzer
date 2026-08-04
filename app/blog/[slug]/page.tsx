@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PageShell } from '../../../src/components/Nav'
 import { formatDate, getPost, getPosts } from '../../../src/lib/blog'
-import { SITE_URL } from '../../layout'
+import { SITE_URL } from '../../../src/lib/site'
 
 type Params = { params: Promise<{ slug: string }> }
 

@@ -3,6 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   // The Stockfish worker + wasm and the piece SVGs live in /public and are
   // fetched at runtime by URL, so nothing here needs bundling them.
+  async rewrites() {
+    // Next serves /public files by exact path only — it does no directory-index
+    // resolution — so /admin has to be pointed at the Decap CMS entry file.
+    return [{ source: '/admin', destination: '/admin/index.html' }]
+  },
   async headers() {
     return [
       {

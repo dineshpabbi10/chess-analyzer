@@ -14,7 +14,7 @@
     "chess.js": "^1.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "stockfish": "^16.0.0"
+    "stockfish": "^18.0.8"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

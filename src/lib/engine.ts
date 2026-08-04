@@ -1,13 +1,18 @@
-// Thin async wrapper around Stockfish 16 (WASM), run as a Web Worker from
-// /public/engine. Analyses are queued so only one `go` is in flight at a time.
-// MultiPV=2 so we learn the 2nd-best move too.
+// Thin async wrapper around Stockfish 18 "lite, single-threaded" (WASM), run as a
+// Web Worker from /public/engine. Analyses are queued so only one `go` is in
+// flight at a time. MultiPV=2 so we learn the 2nd-best move too.
 //
-// We deliberately use ONLY the single-threaded build. The multi-threaded build
-// allocates a fixed 512 MiB SharedArrayBuffer up front, which throws
-// "WebAssembly.Memory(): could not allocate memory" and crashes on many real
-// browsers/devices (and the failure partly happens in nested pthread workers, so
-// it can't be caught cleanly). The single-threaded build uses a small, growable,
-// non-shared memory and runs reliably everywhere — a bit slower, but it works.
+// Why this exact build:
+//  - "lite" embeds a small NNUE net (~7 MB wasm), so there is no separate net to
+//    download — the old SF16 setup shipped a 40 MB .nnue that was never loaded.
+//  - "single" (single-threaded) never touches SharedArrayBuffer. The threaded
+//    builds allocate shared memory up front, which threw
+//    "WebAssembly.Memory(): could not allocate memory" on real devices and
+//    crashed in nested pthread workers where it couldn't be caught cleanly.
+//    Single-threaded uses a small growable, non-shared memory and runs anywhere.
+export const ENGINE_NAME = 'Stockfish 18 Lite'
+export const ENGINE_PATH = '/engine/stockfish-18-lite-single.js'
+
 export const useThreads = false
 
 // Single-threaded build → one engine thread.
@@ -47,16 +52,12 @@ export class Engine {
     this.worker.postMessage(cmd)
   }
 
-  // Boot one engine build and resolve once it reports `readyok`. Rejects on a
-  // worker error or if init stalls (the multi-threaded build can hang on some
-  // browsers) so init() can fall back to the single-threaded build.
-  private boot(threaded: boolean): Promise<void> {
+  // Boot the engine and resolve once it reports `readyok`. Rejects on a worker
+  // error or if init stalls, so callers can retry (a failed engine is never
+  // cached — see engineSingleton).
+  private boot(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const path = threaded
-        ? '/engine/stockfish-nnue-16.js'
-        : '/engine/stockfish-nnue-16-single.js'
-      const threads = threaded ? engineThreads : 1
-      const worker = new Worker(path)
+      const worker = new Worker(ENGINE_PATH)
       this.worker = worker
       let settled = false
       const timer = setTimeout(() => {
@@ -73,13 +74,11 @@ export class Engine {
       const onReady = (e: MessageEvent) => {
         const line = String(e.data)
         if (line === 'uciok') {
-          // NOTE: do NOT send "setoption name Use NNUE value true" — on the
-          // multi-threaded build it triggers an eval-file reload that swallows
-          // the readyok handshake and hangs init. SF16 uses NNUE by default.
-          // Hash must stay <=128 on the threaded build: its WASM memory is
-          // capped, and a larger hash silently overflows and never returns readyok.
-          worker.postMessage(`setoption name Threads value ${threads}`)
-          worker.postMessage(`setoption name Hash value ${threaded ? 128 : 64}`)
+          // Don't send "Use NNUE" — this build embeds its net and always uses it,
+          // and on the old SF16 threaded build that option swallowed the readyok
+          // handshake. Hash stays modest so memory growth is never an issue.
+          worker.postMessage(`setoption name Threads value ${engineThreads}`)
+          worker.postMessage('setoption name Hash value 64')
           worker.postMessage('setoption name MultiPV value 2')
           worker.postMessage('isready')
         } else if (line === 'readyok' && !settled) {
@@ -107,18 +106,7 @@ export class Engine {
   }
 
   async init(): Promise<void> {
-    try {
-      await this.boot(this.threaded)
-    } catch (err) {
-      if (this.threaded) {
-        // Multi-threaded build failed — fall back to the reliable single build.
-        this.threaded = false
-        this.threads = 1
-        await this.boot(false)
-      } else {
-        throw err
-      }
-    }
+    await this.boot()
   }
 
   private onMessage(line: string) {

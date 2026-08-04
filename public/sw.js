@@ -13,16 +13,16 @@
  *  - Other same-origin assets: stale-while-revalidate.
  *  - /api/*: never cached (fetching a game needs the network).
  */
-const VERSION = 'v2'
+// Bump VERSION whenever the precached asset list changes — activate() deletes
+// caches that don't match, which is what evicts the old engine build.
+const VERSION = 'v3'
 const APP_CACHE = `fca-app-${VERSION}`
 const ENGINE_CACHE = `fca-engine-${VERSION}`
 
 const SHELL_EXTRAS = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 const ENGINE_FILES = [
-  '/engine/stockfish-nnue-16.js',
-  '/engine/stockfish-nnue-16.wasm',
-  '/engine/stockfish-nnue-16-single.js',
-  '/engine/stockfish-nnue-16-single.wasm',
+  '/engine/stockfish-18-lite-single.js',
+  '/engine/stockfish-18-lite-single.wasm',
 ]
 const PIECES = ['K', 'Q', 'R', 'B', 'N', 'P'].flatMap((p) => [`/pieces/w${p}.svg`, `/pieces/b${p}.svg`])
 

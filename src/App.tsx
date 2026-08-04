@@ -169,7 +169,7 @@ export function App() {
           <h1>♟ Fast Chess Analyzer</h1>
           <p className="subtitle">
             Paste a chess.com or lichess game link and get a full Game Review — move classifications,
-            accuracy, and the key mistakes, powered by Stockfish 16.
+            accuracy, and the key mistakes, powered by Stockfish 18.
           </p>
 
           <div className="input-wrap">

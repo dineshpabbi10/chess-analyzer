@@ -1,9 +1,8 @@
 # ♟ Fast Chess Analyzer
 
 A self-hosted, **installable** clone of **chess.com's Game Review**. Paste a
-chess.com or lichess game link, and it fetches the game, runs **Stockfish 16** in
-your browser (multi-threaded), and produces the same experience you get on
-chess.com:
+chess.com or lichess game link, and it fetches the game, runs **Stockfish 18
+(Lite)** in your browser, and produces the same experience you get on chess.com:
 
 - **Move classifications** — Brilliant, Great, Best, Excellent, Good, Book,
   Inaccuracy, Mistake, Miss, Blunder — with the familiar colored badges shown on
@@ -86,11 +85,11 @@ vercel.com and import it. Vercel auto-detects Vite and the `api/` function — n
 extra settings.
 
 Notes:
-- The 40 MB NNUE weights file (`public/engine/nn-*.nnue`) must be committed/uploaded
-  — it's how the engine evaluates. It's cached `immutable`, so each visitor
-  downloads it only once.
-- Hobby tier includes 100 GB/month bandwidth (~2,400 first-time analyses). Plenty
-  for personal use; repeat visits are served from cache.
+- The engine is ~7 MB (`public/engine/stockfish-18-lite-single.*`) and must be
+  committed/uploaded. Its NNUE net is **embedded**, so there is no separate
+  weights file. It's cached `immutable`, so each visitor downloads it once.
+- Hobby tier includes 100 GB/month bandwidth. At ~7 MB per first-time visitor
+  that's plenty for personal use; repeat visits are served from cache.
 
 ## Using it
 
@@ -135,7 +134,7 @@ across their moves.
 
 ```
 server/index.js            PGN proxy (chess.com callback+archive, lichess export)
-public/engine/             Stockfish 16 single-threaded WASM + NNUE weights
+public/engine/             Stockfish 18 Lite, single-threaded WASM (net embedded)
 public/pieces/             cburnett SVG piece set
 src/lib/engine.ts          Stockfish Web Worker wrapper (UCI, MultiPV)
 src/lib/analysis.ts        Runs the engine over every position, builds the report

@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "//": "This project was first imported as a Vite app, so Vercel saved Framework Preset=Vite and Output Directory=dist in the dashboard. Those saved values keep applying even with no vercel.json, which is why builds failed with 'no output directory named dist'. Declaring the framework here overrides the preset. Response headers live in next.config.mjs.",
   "framework": "nextjs",
   "buildCommand": "next build"
 }

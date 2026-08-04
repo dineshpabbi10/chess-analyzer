@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Engine } from './lib/engine'
 import { getSharedEngine, onEngineLoading } from './lib/engineSingleton'
-import { Link } from './lib/router'
 import { analyzeStreaming, computeReports, parseGame } from './lib/analysis'
 import type { GameReport } from './lib/types'
 import { Board } from './components/Board'
@@ -166,9 +165,9 @@ export function App() {
     return (
       <div className="landing">
         <div className="landing-card">
-          <h1>♟ Fast Chess Analyzer</h1>
+          <h1>Game Review</h1>
           <p className="subtitle">
-            Paste a chess.com or lichess game link and get a full Game Review — move classifications,
+            Paste a chess.com or lichess game link and get a full review — move classifications,
             accuracy, and the key mistakes, powered by Stockfish 18.
           </p>
 
@@ -243,30 +242,6 @@ export function App() {
               )}
             </div>
           )}
-          <div className="tools-row">
-            <span>Tools:</span>
-            <Link to="/coach" className="link">
-              Coach
-            </Link>
-            <Link to="/puzzles" className="link">
-              Puzzles
-            </Link>
-            <Link to="/openings" className="link">
-              Openings
-            </Link>
-            <Link to="/tools/analysis" className="link">
-              Analysis Board
-            </Link>
-            <Link to="/tools/next-move" className="link">
-              Next Move
-            </Link>
-            <Link to="/tools/editor" className="link">
-              Board Editor
-            </Link>
-            <Link to="/tools/elo-calculator" className="link">
-              Elo Calculator
-            </Link>
-          </div>
         </div>
         <footer className="foot">Runs entirely on your machine · Stockfish via WebAssembly</footer>
       </div>
@@ -278,9 +253,6 @@ export function App() {
   return (
     <div className="review">
       <header className="topbar">
-        <div className="brand" onClick={backToInput}>
-          ♟ Fast Chess Analyzer
-        </div>
         <div className="players">
           <span>{rep.headers.White || 'White'}</span>
           <span className="vs">vs</span>

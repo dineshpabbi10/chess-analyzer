@@ -1,4 +1,5 @@
 import { App } from './App'
+import { AppShell } from './components/AppShell'
 import { PageShell } from './components/Nav'
 import { AnalysisBoard } from './pages/AnalysisBoard'
 import { BoardEditor } from './pages/BoardEditor'
@@ -48,7 +49,9 @@ function Routes() {
 export function Root() {
   return (
     <RouterProvider>
-      <Routes />
+      <AppShell>
+        <Routes />
+      </AppShell>
     </RouterProvider>
   )
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 import { PageShell } from '../components/Nav'
 import { Board } from '../components/Board'
+import { IconCheck, IconNext } from '../components/Icons'
 import {
   learnedCount,
   lineKey,
@@ -326,7 +327,7 @@ export function Openings() {
               </button>
               {!isLast && (
                 <button className="primary" onClick={() => startLine(opening, lineIndex + 1)}>
-                  Next line ▶
+                  Next line <IconNext size={16} />
                 </button>
               )}
               <button className="ghost" onClick={() => setOpening(null)}>
@@ -340,7 +341,7 @@ export function Openings() {
                   className={`op-line-btn${i === lineIndex ? ' on' : ''}${progress[lineKey(opening.id, i)] ? ' learned' : ''}`}
                   onClick={() => startLine(opening, i)}
                 >
-                  {progress[lineKey(opening.id, i)] ? '✔ ' : ''}
+                  {progress[lineKey(opening.id, i)] && <IconCheck size={15} />}
                   {l.name}
                 </button>
               ))}

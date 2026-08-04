@@ -98,3 +98,59 @@ export const IconPawn = ({ size = 22 }: Props) => (
     <path d="M6.5 20h11" />
   </svg>
 )
+
+/* ---- playback / navigation controls ---- */
+
+/** Jump to start. */
+export const IconFirst = ({ size = 20 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M18.5 6v12L10 12l8.5-6Z" fill="currentColor" stroke="none" />
+    <path d="M6 5.5v13" strokeWidth="2.2" />
+  </svg>
+)
+
+/** Step back one move. */
+export const IconPrev = ({ size = 20 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M16 5.5v13L6.5 12 16 5.5Z" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+/** Step forward one move. */
+export const IconNext = ({ size = 20 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M8 5.5v13L17.5 12 8 5.5Z" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+/** Jump to end. */
+export const IconLast = ({ size = 20 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M5.5 6v12L14 12 5.5 6Z" fill="currentColor" stroke="none" />
+    <path d="M18 5.5v13" strokeWidth="2.2" />
+  </svg>
+)
+
+/** Flip the board. */
+export const IconFlip = ({ size = 20 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M8 4.5 5 7.5h6L8 4.5Z" fill="currentColor" stroke="none" />
+    <path d="M8 7.5v9" />
+    <path d="M16 19.5l3-3h-6l3 3Z" fill="currentColor" stroke="none" />
+    <path d="M16 16.5v-9" />
+  </svg>
+)
+
+/** Tick — used for solved/learned states. */
+export const IconCheck = ({ size = 18 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M5 12.5l4.5 4.5L19 7" strokeWidth="2.4" />
+  </svg>
+)
+
+/** Cross — used for wrong answers. */
+export const IconCross = ({ size = 18 }: Props) => (
+  <svg {...base(size)}>
+    <path d="M7 7l10 10M17 7L7 17" strokeWidth="2.4" />
+  </svg>
+)

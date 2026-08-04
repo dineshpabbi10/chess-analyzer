@@ -4,6 +4,7 @@ import { PageShell } from '../components/Nav'
 import { Board } from '../components/Board'
 import { EvalBar } from '../components/EvalBar'
 import { getSharedEngine } from '../lib/engineSingleton'
+import { IconFirst, IconFlip, IconLast, IconNext, IconPrev } from '../components/Icons'
 
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const SEARCH_MS = 1200 // bounded search so the eval keeps up with clicking
@@ -359,11 +360,21 @@ export function AnalysisBoard() {
             />
           </div>
           <div className="controls">
-            <button onClick={goStart} title="Start (Home)">⏮</button>
-            <button onClick={goBack} title="Back (←)">◀</button>
-            <button onClick={goForward} title="Forward (→)">▶</button>
-            <button onClick={goEnd} title="End (End)">⏭</button>
-            <button onClick={() => setFlipped((v) => !v)} title="Flip (f)">⇅</button>
+            <button onClick={goStart} title="Start (Home)" aria-label="Start">
+              <IconFirst />
+            </button>
+            <button onClick={goBack} title="Back (←)" aria-label="Back">
+              <IconPrev />
+            </button>
+            <button onClick={goForward} title="Forward (→)" aria-label="Forward">
+              <IconNext />
+            </button>
+            <button onClick={goEnd} title="End (End)" aria-label="End">
+              <IconLast />
+            </button>
+            <button onClick={() => setFlipped((v) => !v)} title="Flip (f)" aria-label="Flip board">
+              <IconFlip />
+            </button>
           </div>
           {game.isGameOver() && (
             <div className="ab-status">

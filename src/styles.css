@@ -1157,3 +1157,68 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   font-weight: 600;
 }
 .sheet-item.active { border-color: var(--green); color: var(--green); }
+
+/* ================= Unified button system =================
+   Every button shares one baseline: inline-flex so icon+label always align and
+   centre, a consistent 40px (44px touch) height, matching radius, and the same
+   disabled/active feedback. Icons are inline SVG rather than unicode glyphs —
+   characters like ⏮/⏭ render as colour emoji on iOS while ◀/▶ render as plain
+   text, which made control rows look mismatched. */
+button.primary,
+.ghost,
+.controls button,
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-weight: 600;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    transform 0.06s ease;
+}
+button.primary { padding: 11px 22px; font-weight: 700; }
+.ghost { padding: 10px 16px; }
+.ghost:active:not(:disabled) { transform: translateY(1px); }
+.ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Keep icons from being squashed and align them optically with text. */
+button svg { flex: none; }
+
+/* Board navigation / playback controls */
+.controls button {
+  width: 100%;
+  max-width: 62px;
+  height: 44px;
+  padding: 0;
+  color: var(--text);
+}
+.controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+.controls button:active:not(:disabled) { transform: translateY(1px); }
+.controls { gap: 8px; }
+
+/* Chips: match the button baseline so rows of mixed controls line up. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  line-height: 1;
+}
+
+/* Small inline icons inside verdict/label text sit on the text baseline. */
+.drill-verdict-head,
+.op-line-btn,
+.pz-turn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+@media (max-width: 700px) {
+  /* Comfortable touch targets on phones. */
+  button.primary, .ghost { min-height: 44px; }
+  .controls button { height: 46px; max-width: none; }
+  .chip { min-height: 38px; }
+}

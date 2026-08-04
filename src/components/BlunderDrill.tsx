@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Chess } from 'chess.js'
 import { Board } from './Board'
+import { IconCheck, IconCross, IconNext, IconPrev } from './Icons'
 import { getSharedEngine } from '../lib/engineSingleton'
 import { scoreToCp } from '../lib/classify'
 import { META } from '../lib/classificationMeta'
@@ -245,11 +246,17 @@ export function BlunderDrill({
               {verdict && (
                 <div className={`drill-verdict tier-${verdict.tier}`}>
                   <div className="drill-verdict-head">
-                    {verdict.tier === 'solved'
-                      ? `✔ ${verdict.san} works!`
-                      : verdict.tier === 'close'
-                        ? `~ ${verdict.san} is better, but not best`
-                        : `✕ ${verdict.san} still gives too much away`}
+                    {verdict.tier === 'solved' ? (
+                      <>
+                        <IconCheck size={17} /> {verdict.san} works!
+                      </>
+                    ) : verdict.tier === 'close' ? (
+                      <>{verdict.san} is better, but not best</>
+                    ) : (
+                      <>
+                        <IconCross size={17} /> {verdict.san} still gives too much away
+                      </>
+                    )}
                   </div>
                   <div className="drill-verdict-body">
                     {verdict.tier !== 'solved' && (
@@ -278,14 +285,14 @@ export function BlunderDrill({
 
               <div className="btn-row drill-nav">
                 <button className="ghost" onClick={prev} disabled={index === 0}>
-                  ◀ Previous
+                  <IconPrev size={16} /> Previous
                 </button>
                 <button
                   className="primary"
                   onClick={next}
                   disabled={index >= drills.length - 1}
                 >
-                  Next ▶
+                  Next <IconNext size={16} />
                 </button>
               </div>
             </div>

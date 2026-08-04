@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Chess } from 'chess.js'
 import { PageShell } from '../components/Nav'
 import { navigate } from '../lib/router'
+import { IconFlip } from '../components/Icons'
 
 const START_BOARD = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
 const PIECES = ['K', 'Q', 'R', 'B', 'N', 'P'] as const
@@ -141,7 +142,7 @@ export function BoardEditor() {
           <div className="board editor-board">{cells}</div>
           <div className="btn-row">
             <button className="ghost" onClick={() => setFlipped((v) => !v)}>
-              ⇅ Flip
+              <IconFlip size={17} /> Flip
             </button>
             <button className="ghost" onClick={() => setSquares(boardToSquares(START_BOARD))}>
               Start position

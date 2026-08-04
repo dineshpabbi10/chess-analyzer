@@ -10,6 +10,7 @@ import { EvalBar } from './components/EvalBar'
 import { MoveList } from './components/MoveList'
 import { ReviewSummary } from './components/ReviewSummary'
 import { MoveDetails } from './components/MoveDetails'
+import { IconFirst, IconFlip, IconLast, IconNext, IconPrev } from './components/Icons'
 
 type View = 'input' | 'loading' | 'review'
 
@@ -297,11 +298,21 @@ export function App() {
             />
           </div>
           <div className="controls">
-            <button onClick={() => go(-1)} title="Start (Home)">⏮</button>
-            <button onClick={() => go(current - 1)} title="Previous (←)">◀</button>
-            <button onClick={() => go(current + 1)} title="Next (→)">▶</button>
-            <button onClick={() => go(moves.length - 1)} title="End (End)">⏭</button>
-            <button onClick={() => setFlipped((f) => !f)} title="Flip board (f)">⇅</button>
+            <button onClick={() => go(-1)} title="Start (Home)" aria-label="Start">
+              <IconFirst />
+            </button>
+            <button onClick={() => go(current - 1)} title="Previous (←)" aria-label="Previous move">
+              <IconPrev />
+            </button>
+            <button onClick={() => go(current + 1)} title="Next (→)" aria-label="Next move">
+              <IconNext />
+            </button>
+            <button onClick={() => go(moves.length - 1)} title="End (End)" aria-label="End">
+              <IconLast />
+            </button>
+            <button onClick={() => setFlipped((f) => !f)} title="Flip board (f)" aria-label="Flip board">
+              <IconFlip />
+            </button>
           </div>
         </div>
 

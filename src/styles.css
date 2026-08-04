@@ -448,6 +448,27 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 /* ================= Page layout (nav lives in AppShell) ================= */
+.page { min-height: 100%; }
+.page-main {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  /* Generous left/right gutters so content never crowds the sidebar. */
+  padding: 30px 30px 48px;
+}
+.page-title {
+  margin: 0 0 6px;
+  font-size: 27px;
+  letter-spacing: -0.01em;
+}
+.page-sub {
+  color: var(--muted);
+  margin: 0 0 26px;
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 72ch;
+}
+
 .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 .tool-grid-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .card {

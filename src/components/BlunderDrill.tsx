@@ -1,3 +1,5 @@
+'use client'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Chess } from 'chess.js'
 import { Board } from './Board'

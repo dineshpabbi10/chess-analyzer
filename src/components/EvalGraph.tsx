@@ -1,3 +1,5 @@
+'use client'
+
 import { useMemo } from 'react'
 import { winPercent } from '../lib/classify'
 import { META } from '../lib/classificationMeta'

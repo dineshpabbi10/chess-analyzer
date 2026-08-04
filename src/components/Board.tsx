@@ -1,3 +1,5 @@
+'use client'
+
 import { useMemo, type ReactElement } from 'react'
 import { META } from '../lib/classificationMeta'
 import type { Classification } from '../lib/types'

@@ -106,7 +106,7 @@ export interface PuzzleProgress {
   history: { id: string; rating: number; solved: boolean; delta: number }[]
 }
 
-const DEFAULT_PROGRESS: PuzzleProgress = {
+export const DEFAULT_PROGRESS: PuzzleProgress = {
   rating: 1200,
   solved: 0,
   failed: 0,

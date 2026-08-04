@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, type ReactElement } from 'react'
 import { META } from '../lib/classificationMeta'
 import type { AnalyzedMove } from '../lib/types'

@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useRoute } from '../lib/router'
 import {
@@ -26,6 +28,11 @@ const PRIMARY: Item[] = [
   { to: '/coach', label: 'Coach', short: 'Coach', icon: IconCoach },
   { to: '/puzzles', label: 'Puzzles', short: 'Puzzles', icon: IconPuzzle },
   { to: '/openings', label: 'Openings', short: 'Openings', icon: IconBook },
+]
+
+/** Content pages — sidebar only (the tab bar is full). */
+const CONTENT: Item[] = [
+  { to: '/blog', label: 'Blog', short: 'Blog', icon: IconBook },
 ]
 
 /** Secondary utilities — sidebar section on desktop, "More" sheet on mobile. */
@@ -80,6 +87,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span>{it.label}</span>
             </Link>
           ))}
+          <div className="side-section">Read</div>
+          {CONTENT.map((it) => (
+            <Link key={it.to} to={it.to} className={`side-link${path === it.to || path.startsWith(it.to + '/') ? ' active' : ''}`}>
+              <it.icon size={20} />
+              <span>{it.label}</span>
+            </Link>
+          ))}
         </nav>
 
         <div className="sidebar-foot">Stockfish 18 · runs on your device</div>
@@ -122,7 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="sheet-grip" />
             <div className="sheet-title">Tools</div>
             <div className="sheet-grid">
-              {TOOLS.map((it) => (
+              {[...TOOLS, ...CONTENT].map((it) => (
                 <Link
                   key={it.to}
                   to={it.to}

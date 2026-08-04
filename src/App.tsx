@@ -1,3 +1,5 @@
+'use client'
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Engine } from './lib/engine'
 import { getSharedEngine, onEngineLoading } from './lib/engineSingleton'
